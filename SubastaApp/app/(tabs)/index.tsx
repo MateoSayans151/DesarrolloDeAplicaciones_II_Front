@@ -1,15 +1,40 @@
 import { Image } from "expo-image";
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import {
   Alert,
+  ActivityIndicator,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import React, { useState } from "react";
+import usuarioService from "@/models/services/usuarioService";
 
 export default function HomeScreen() {
+  const router = useRouter();
+  const [documento, setDocumento] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async () => {
+    if (!documento.trim() || !password.trim()) {
+      Alert.alert("Error", "Completá usuario y clave.");
+      return;
+    }
+    setLoading(true);
+    try {
+      await usuarioService.login({ documento, password });
+      await usuarioService.obtenerPerfil();
+      router.replace("/subastas");
+    } catch (error: any) {
+      Alert.alert("Error", error.message || "Credenciales incorrectas.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
@@ -22,33 +47,45 @@ export default function HomeScreen() {
         <Text style={styles.title}>BIENVENIDO A{"\n"}SUBASTA APP</Text>
         <View style={styles.inputContainer}>
           <TextInput
-            placeholder="Usuario"
+            placeholder="Documento"
             placeholderTextColor="#bfc8d6"
             style={styles.input}
+            value={documento}
+            onChangeText={setDocumento}
+            autoCapitalize="none"
+            keyboardType="default"
           />
           <TextInput
             placeholder="Clave"
             placeholderTextColor="#bfc8d6"
             secureTextEntry
             style={styles.input}
+            value={password}
+            onChangeText={setPassword}
           />
         </View>
         <Text style={styles.registerText}>
-          No tienes una cuenta, registrate{" "}
+          No tenés una cuenta, registrate{" "}
           <Link href="/registro-postor" asChild>
             <Text style={styles.registerLink}>ACÁ</Text>
           </Link>
         </Text>
         <TouchableOpacity
-          style={styles.button}
-          onPress={() => Alert.alert("Iniciar sesión")}
+          style={[styles.button, loading && { opacity: 0.7 }]}
+          onPress={handleLogin}
+          disabled={loading}
         >
-          <Text style={styles.buttonText}>INICIAR SESIÓN</Text>
+          {loading ? (
+            <ActivityIndicator color="#2d2d2d" />
+          ) : (
+            <Text style={styles.buttonText}>INICIAR SESIÓN</Text>
+          )}
         </TouchableOpacity>
       </View>
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -104,7 +141,6 @@ const styles = StyleSheet.create({
   },
   button: {
     width: "100%",
-    //backgroundColor: 'linear-gradient(90deg, #ffe082 0%, #bfa14a 100%)', // fallback for gold effect
     borderRadius: 16,
     paddingVertical: 16,
     alignItems: "center",
@@ -115,7 +151,6 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
     marginBottom: 8,
-    // For gold gradient, you may need to use a gradient component
     backgroundColor: "#ffe082",
   },
   buttonText: {
