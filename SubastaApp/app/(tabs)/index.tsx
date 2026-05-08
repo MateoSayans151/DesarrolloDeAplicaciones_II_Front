@@ -1,39 +1,18 @@
 import { Image } from "expo-image";
-import { Link, useRouter } from "expo-router";
+import { Link } from "expo-router";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { useState } from "react";
 import {
   Alert,
-  ActivityIndicator,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
-import React, { useState } from "react";
-import usuarioService from "@/models/services/usuarioService";
 
 export default function HomeScreen() {
-  const router = useRouter();
-  const [documento, setDocumento] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const handleLogin = async () => {
-    if (!documento.trim() || !password.trim()) {
-      Alert.alert("Error", "Completá usuario y clave.");
-      return;
-    }
-    setLoading(true);
-    try {
-      await usuarioService.login({ documento, password });
-      await usuarioService.obtenerPerfil();
-      router.replace("/subastas");
-    } catch (error: any) {
-      Alert.alert("Error", error.message || "Credenciales incorrectas.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [showPassword, setShowPassword] = useState(false);
 
   return (
     <View style={styles.container}>
@@ -47,45 +26,49 @@ export default function HomeScreen() {
         <Text style={styles.title}>BIENVENIDO A{"\n"}SUBASTA APP</Text>
         <View style={styles.inputContainer}>
           <TextInput
-            placeholder="Documento"
-            placeholderTextColor="#bfc8d6"
+            placeholder="Usuario"
+            placeholderTextColor="#99988B"
             style={styles.input}
-            value={documento}
-            onChangeText={setDocumento}
-            autoCapitalize="none"
-            keyboardType="default"
           />
-          <TextInput
-            placeholder="Clave"
-            placeholderTextColor="#bfc8d6"
-            secureTextEntry
-            style={styles.input}
-            value={password}
-            onChangeText={setPassword}
-          />
+          <View style={styles.passwordContainer}>
+            <TextInput
+              placeholder="Clave"
+              placeholderTextColor="#99988B"
+              secureTextEntry={!showPassword}
+              style={styles.passwordInput}
+            />
+            <TouchableOpacity
+              accessibilityLabel={
+                showPassword ? "Ocultar clave" : "Mostrar clave"
+              }
+              accessibilityRole="button"
+              onPress={() => setShowPassword((current) => !current)}
+              style={styles.passwordIcon}
+            >
+              <MaterialIcons
+                name={showPassword ? "visibility" : "visibility-off"}
+                size={24}
+                color="#bfc8d6"
+              />
+            </TouchableOpacity>
+          </View>
         </View>
         <Text style={styles.registerText}>
-          No tenés una cuenta, registrate{" "}
+          No tienes una cuenta, registrate{" "}
           <Link href="/registro-postor" asChild>
             <Text style={styles.registerLink}>ACÁ</Text>
           </Link>
         </Text>
         <TouchableOpacity
-          style={[styles.button, loading && { opacity: 0.7 }]}
-          onPress={handleLogin}
-          disabled={loading}
+          style={styles.button}
+          onPress={() => Alert.alert("Iniciar sesión")}
         >
-          {loading ? (
-            <ActivityIndicator color="#2d2d2d" />
-          ) : (
-            <Text style={styles.buttonText}>INICIAR SESIÓN</Text>
-          )}
+          <Text style={styles.buttonText}>INICIAR SESIÓN</Text>
         </TouchableOpacity>
       </View>
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -101,7 +84,6 @@ const styles = StyleSheet.create({
   logo: {
     width: 140,
     height: 140,
-    borderRadius: 24,
     marginBottom: 16,
   },
   title: {
@@ -121,12 +103,33 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.05)",
     borderColor: "#bfc8d6",
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: 20,
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 16,
     color: "#e5e2c6",
     fontSize: 16,
     marginBottom: 12,
+  },
+  passwordContainer: {
+    backgroundColor: "rgba(255,255,255,0.05)",
+    borderColor: "#bfc8d6",
+    borderWidth: 1,
+    borderRadius: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  passwordInput: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    color: "#e5e2c6",
+    fontSize: 16,
+  },
+  passwordIcon: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 16,
   },
   registerText: {
     color: "#bfc8d6",
@@ -141,22 +144,17 @@ const styles = StyleSheet.create({
   },
   button: {
     width: "100%",
-    borderRadius: 16,
+    borderRadius: 20,
     paddingVertical: 16,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
     marginBottom: 8,
-    backgroundColor: "#ffe082",
+    backgroundColor: "#d4af37",
   },
   buttonText: {
     color: "#2d2d2d",
     fontWeight: "bold",
-    fontSize: 18,
+    fontSize: 20,
     letterSpacing: 1,
   },
 });

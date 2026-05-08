@@ -1,14 +1,68 @@
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
+import { Image } from "expo-image";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+} from "react-native";
+
+import { useRouter } from "expo-router";
 
 export default function ChequeScreen() {
+  const router = useRouter();
   return (
     <View style={styles.container}>
+      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+        <Text style={styles.backText}>{"< Back"}</Text>
+      </TouchableOpacity>
+      <View style={styles.logoContainer}>
+        <Image
+          source={require("@/assets/images/appicon.png")}
+          style={styles.logo}
+        />
+      </View>
+
       <Text style={styles.title}>AÑADIR CHEQUE CERTIFICADO</Text>
 
-      <TextInput placeholder="Monto del Cheque" style={styles.input} />
-      <TextInput placeholder="Banco Emisor" style={styles.input} />
-      <TextInput placeholder="Titular" style={styles.input} />
-      <TextInput placeholder="Número de Cheque" style={styles.input} />
+      <View style={styles.chequeIconContainer}>
+        <View style={styles.chequeIcon}>
+          <View style={styles.chequeTopRow}>
+            <View style={styles.chequeShortLine} />
+            <View style={styles.chequeAmountBox} />
+          </View>
+          <View style={styles.chequeLongLine} />
+          <View style={styles.chequeBottomRow}>
+            <View style={styles.chequeSmallLine} />
+            <View style={styles.chequeSignatureLine} />
+          </View>
+        </View>
+      </View>
+
+      <TextInput
+        placeholder="Monto del Cheque"
+        style={styles.input}
+        placeholderTextColor="#99988B"
+      />
+      <TextInput
+        placeholder="Banco Emisor"
+        style={styles.input}
+        placeholderTextColor="#99988B"
+      />
+      <TextInput
+        placeholder="Titular"
+        style={styles.input}
+        placeholderTextColor="#99988B"
+      />
+      <TextInput
+        placeholder="Número de Cheque"
+        style={styles.input}
+        placeholderTextColor="#99988B"
+      />
+
+      <Text style={styles.infoText}>
+        Monto disponible como fondo de garantía tras verificación. 
+      </Text>
 
       <TouchableOpacity style={styles.button}>
         <Text style={styles.buttonText}>REGISTRAR CHEQUE</Text>
@@ -19,8 +73,107 @@ export default function ChequeScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#07162b", padding: 24 },
-  title: { color: "#e5e2c6", fontSize: 20, textAlign: "center", marginBottom: 20 },
-  input: { borderWidth: 1, borderColor: "#bfc8d6", borderRadius: 12, padding: 12, marginBottom: 12, color: "white" },
-  button: { backgroundColor: "#d4af37", padding: 16, borderRadius: 20, marginTop: 20 },
-  buttonText: { textAlign: "center", fontWeight: "bold" },
+  title: {
+    color: "#e5e2c6",
+    fontSize: 26,
+    fontWeight: "bold",
+    textAlign: "center",
+    fontFamily: "serif",
+    letterSpacing: 1,
+    marginBottom: 12,
+  },
+  chequeIconContainer: {
+    alignItems: "center",
+    marginTop: 20,
+    marginBottom: 40,
+  },
+  chequeIcon: {
+    width: 150,
+    height: 88,
+    borderColor: "#99988B",
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    justifyContent: "space-between",
+  },
+  chequeTopRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  chequeShortLine: {
+    width: 48,
+    height: 1,
+    backgroundColor: "#99988B",
+  },
+  chequeAmountBox: {
+    width: 36,
+    height: 18,
+    borderColor: "#99988B",
+    borderWidth: 1,
+    borderRadius: 3,
+  },
+  chequeLongLine: {
+    width: "100%",
+    height: 1,
+    backgroundColor: "#99988B",
+  },
+  chequeBottomRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  chequeSmallLine: {
+    width: 34,
+    height: 1,
+    backgroundColor: "#99988B",
+  },
+  chequeSignatureLine: {
+    width: 54,
+    height: 1,
+    backgroundColor: "#99988B",
+  },
+  input: {
+    backgroundColor: "rgba(255,255,255,0.05)",
+    borderColor: "#bfc8d6",
+    borderWidth: 1,
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    color: "#e5e2c6",
+    fontSize: 16,
+    marginBottom: 12,
+  },
+  infoText: {
+    color: "#bfc8d6",
+    fontSize: 13,
+    textAlign: "center",
+    marginTop: 10,
+    marginBottom: 10,
+  },
+  button: {
+    backgroundColor: "#d4af37",
+    padding: 16,
+    borderRadius: 20,
+    marginTop: 20,
+  },
+  backButton: {
+    alignSelf: "flex-start",
+    marginBottom: 8,
+  },
+  backText: {
+    color: "#bfc8d6",
+    fontSize: 20,
+  },
+  logoContainer: {
+    marginBottom: 16,
+    alignItems: "center",
+  },
+  logo: {
+    width: 110,
+    height: 110,
+    marginBottom: 8,
+  },
+  buttonText: { textAlign: "center", fontWeight: "bold", fontSize: 20 },
 });
