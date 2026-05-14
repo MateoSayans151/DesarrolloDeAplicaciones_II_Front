@@ -1,9 +1,8 @@
 import { Image } from "expo-image";
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useState } from "react";
 import {
-  Alert,
   StyleSheet,
   Text,
   TextInput,
@@ -12,6 +11,7 @@ import {
 } from "react-native";
 
 export default function HomeScreen() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
 
   return (
@@ -61,7 +61,7 @@ export default function HomeScreen() {
         </Text>
         <TouchableOpacity
           style={styles.button}
-          onPress={() => Alert.alert("Iniciar sesión")}
+          onPress={() => router.push("/home")}
         >
           <Text style={styles.buttonText}>INICIAR SESIÓN</Text>
         </TouchableOpacity>
