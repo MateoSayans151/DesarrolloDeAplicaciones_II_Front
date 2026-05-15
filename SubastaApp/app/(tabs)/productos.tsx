@@ -1,7 +1,6 @@
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import { useState } from "react";
 import {
   SafeAreaView,
   ScrollView,
@@ -11,9 +10,10 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { BottomNav } from "@/components/BottomNav";
+import { ScreenHeader } from "@/components/ScreenHeader";
 
 const C = {
-  page: "#1f1f1f",
   screen: "#00182b",
   gold: "#aaa18e",
   brightGold: "#e4bd56",
@@ -61,14 +61,13 @@ const auctions = [
   },
 ];
 
-const tabs = [
-  { id: "home", label: "HOME", icon: "radio-button-unchecked", badge: null },
-  { id: "productos", label: "PRODUCTOS", icon: "grid-view", badge: 12 },
-  { id: "pujas", label: "PUJAS", icon: "work-outline", badge: 3 },
-  { id: "perfil", label: "MI PERFIL", icon: "person-outline", badge: null },
-] as const;
-
-function ProductCard({ item }: { item: (typeof products)[number] }) {
+function ProductCard({
+  item,
+  onInfo,
+}: {
+  item: (typeof products)[number];
+  onInfo: (id: string) => void;
+}) {
   return (
     <View style={styles.productCard}>
       <Image source={{ uri: item.image }} style={styles.productImage} />
@@ -90,7 +89,11 @@ function ProductCard({ item }: { item: (typeof products)[number] }) {
             <View style={styles.statusDot} />
             <Text style={styles.statusText}>{item.status}</Text>
           </View>
-          <TouchableOpacity style={styles.smallButton} activeOpacity={0.82}>
+          <TouchableOpacity
+            style={styles.smallButton}
+            activeOpacity={0.82}
+            onPress={() => onInfo(item.id)}
+          >
             <Text style={styles.smallButtonText}>+ Info</Text>
           </TouchableOpacity>
         </View>
@@ -132,14 +135,6 @@ function AuctionCard({ item }: { item: (typeof auctions)[number] }) {
 
 export default function ProductosScreen() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState("products");
-
-  const routes: Record<string, string> = {
-    home: "/home",
-    productos: "/productos",
-    pujas: "/pujas",
-    perfil: "/perfil",
-  };
 
   return (
     <SafeAreaView style={styles.page}>
@@ -150,37 +145,7 @@ export default function ProductosScreen() {
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
         >
-          <Text style={styles.title}>SUBASTA APP</Text>
-
-          <View style={styles.topRow}>
-            <View style={styles.sideInfo}>
-              <Image
-                source={{
-                  uri: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&h=120&fit=crop&crop=face",
-                }}
-                style={styles.avatar}
-              />
-              <Text style={styles.sideLabel}>CATEGORIA: ORO</Text>
-            </View>
-
-            <View style={styles.starCircle}>
-              <MaterialIcons name="star" size={48} color={C.gold} />
-            </View>
-
-            <View style={styles.sideInfo}>
-              <View style={styles.bellBox}>
-                <MaterialIcons
-                  name="notifications-none"
-                  size={46}
-                  color={C.gold}
-                />
-                <View style={styles.notificationBadge}>
-                  <Text style={styles.notificationText}>3</Text>
-                </View>
-              </View>
-              <Text style={styles.sideLabel}>NOTIFICACIONES</Text>
-            </View>
-          </View>
+          <ScreenHeader />
 
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>MIS PRODUCTOS</Text>
@@ -191,7 +156,13 @@ export default function ProductosScreen() {
 
           <View style={styles.list}>
             {products.map((item) => (
-              <ProductCard key={item.id} item={item} />
+              <ProductCard
+                key={item.id}
+                item={item}
+                onInfo={(id) =>
+                  router.push(`/(tabs)/informacion-producto?id=${id}` as any)
+                }
+              />
             ))}
           </View>
 
@@ -209,40 +180,7 @@ export default function ProductosScreen() {
           </View>
         </ScrollView>
 
-        <View style={styles.bottomNav}>
-          {tabs.map((tab) => {
-            const isActive = activeTab === tab.id;
-
-            return (
-              <TouchableOpacity
-                key={tab.id}
-                activeOpacity={0.75}
-                onPress={() => {
-                  setActiveTab(tab.id);
-                  const route = routes[tab.id] ?? "/productos";
-                  router.push(route);
-                }}
-                style={styles.tabItem}
-              >
-                <View>
-                  <MaterialIcons
-                    name={tab.icon}
-                    size={25}
-                    color={isActive ? C.gold : C.muted}
-                  />
-                  {tab.badge != null && (
-                    <Text style={styles.tabBadge}>{tab.badge}</Text>
-                  )}
-                </View>
-                <Text
-                  style={[styles.tabText, isActive && styles.activeTabText]}
-                >
-                  {tab.label}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
+        <BottomNav activeTab="productos" />
       </View>
     </SafeAreaView>
   );
@@ -262,72 +200,6 @@ const styles = StyleSheet.create({
   content: {
     paddingBottom: 92,
     paddingHorizontal: 20,
-  },
-  title: {
-    color: C.gold,
-    fontFamily: "serif",
-    fontSize: 29,
-    fontWeight: "900",
-    letterSpacing: 1,
-    marginBottom: 12,
-    textAlign: "center",
-  },
-  topRow: {
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 22,
-  },
-  sideInfo: {
-    alignItems: "center",
-    width: 92,
-  },
-  avatar: {
-    borderColor: "#e6dac2",
-    borderRadius: 22,
-    borderWidth: 1,
-    height: 44,
-    marginBottom: 6,
-    width: 44,
-  },
-  sideLabel: {
-    color: C.gold,
-    fontFamily: "serif",
-    fontSize: 12,
-    fontWeight: "800",
-    textAlign: "center",
-  },
-  starCircle: {
-    alignItems: "center",
-    borderColor: C.line,
-    borderRadius: 38,
-    borderWidth: 2,
-    height: 76,
-    justifyContent: "center",
-    width: 76,
-  },
-  bellBox: {
-    alignItems: "center",
-    height: 48,
-    justifyContent: "center",
-    marginBottom: 2,
-    width: 58,
-  },
-  notificationBadge: {
-    alignItems: "center",
-    backgroundColor: "#aa8b3f",
-    borderRadius: 10,
-    height: 20,
-    justifyContent: "center",
-    position: "absolute",
-    right: 6,
-    top: -4,
-    width: 20,
-  },
-  notificationText: {
-    color: "#ffffff",
-    fontSize: 12,
-    fontWeight: "800",
   },
   sectionHeader: {
     alignItems: "center",
@@ -512,39 +384,5 @@ const styles = StyleSheet.create({
     fontFamily: "serif",
     fontSize: 14,
     fontWeight: "900",
-  },
-  bottomNav: {
-    alignItems: "center",
-    backgroundColor: C.screen,
-    borderTopColor: "#aac1d8",
-    borderTopWidth: 1,
-    bottom: 0,
-    flexDirection: "row",
-    height: 72,
-    justifyContent: "space-around",
-    left: 0,
-    marginBottom: 10,
-    position: "absolute",
-    right: 0,
-  },
-  tabItem: {
-    alignItems: "center",
-    minWidth: 66,
-  },
-  tabBadge: {
-    color: C.gold,
-    fontSize: 11,
-    position: "absolute",
-    right: -12,
-    top: -7,
-  },
-  tabText: {
-    color: C.muted,
-    fontFamily: "serif",
-    fontSize: 13,
-    marginTop: 2,
-  },
-  activeTabText: {
-    color: C.gold,
   },
 });
