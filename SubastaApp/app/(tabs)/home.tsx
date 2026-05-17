@@ -1,4 +1,3 @@
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Image } from "expo-image";
 import {
   SafeAreaView,
@@ -9,6 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { AuctionCard } from "@/components/AuctionCard";
 import { BottomNav } from "@/components/BottomNav";
 import { ScreenHeader } from "@/components/ScreenHeader";
 
@@ -88,33 +88,6 @@ function FeaturedCard({ item }: { item: (typeof featuredAuctions)[number] }) {
   );
 }
 
-function AuctionCard({ item }: { item: (typeof auctions)[number] }) {
-  return (
-    <View style={styles.auctionCard}>
-      <Image source={{ uri: item.image }} style={styles.auctionImage} />
-
-      <View style={styles.auctionInfo}>
-        <View style={styles.cardTitleRow}>
-          <Text style={styles.cardTitle} numberOfLines={1}>
-            {item.title}
-          </Text>
-          <MaterialIcons name="chevron-right" size={22} color={C.gold} />
-        </View>
-
-        <Text style={styles.bidLine}>Mayor oferta actual</Text>
-        <Text style={styles.bidAmount}>{item.highestBid}</Text>
-
-        <View style={styles.auctionFooter}>
-          <Text style={styles.timeLeft}>{item.timeLeft}</Text>
-          <View style={styles.liveRow}>
-            <View style={styles.liveDot} />
-            <Text style={styles.liveText}>{item.currency}</Text>
-          </View>
-        </View>
-      </View>
-    </View>
-  );
-}
 
 export default function HomeScreen() {
   return (
@@ -251,81 +224,5 @@ const styles = StyleSheet.create({
   list: {
     gap: 10,
   },
-  auctionCard: {
-    alignItems: "center",
-    backgroundColor: C.card,
-    borderColor: C.blueLine,
-    borderRadius: 15,
-    borderWidth: 1,
-    flexDirection: "row",
-    minHeight: 92,
-    padding: 8,
-  },
-  auctionImage: {
-    backgroundColor: "#f7f7f7",
-    borderColor: "#d7d7d7",
-    borderRadius: 9,
-    borderWidth: 1,
-    height: 68,
-    marginRight: 10,
-    width: 68,
-  },
-  auctionInfo: {
-    flex: 1,
-    minWidth: 0,
-  },
-  cardTitleRow: {
-    alignItems: "center",
-    flexDirection: "row",
-  },
-  cardTitle: {
-    color: C.gold,
-    flex: 1,
-    fontFamily: "serif",
-    fontSize: 16,
-    fontWeight: "900",
-  },
-  bidLine: {
-    color: C.muted,
-    fontFamily: "serif",
-    fontSize: 12,
-    marginTop: 2,
-  },
-  bidAmount: {
-    color: C.brightGold,
-    fontFamily: "serif",
-    fontSize: 15,
-    fontWeight: "900",
-  },
-  auctionFooter: {
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 4,
-  },
-  timeLeft: {
-    color: C.red,
-    flex: 1,
-    fontFamily: "serif",
-    fontSize: 12,
-    fontWeight: "900",
-  },
-  liveRow: {
-    alignItems: "center",
-    flexDirection: "row",
-    marginLeft: 8,
-  },
-  liveDot: {
-    backgroundColor: C.green,
-    borderRadius: 4,
-    height: 8,
-    marginRight: 4,
-    width: 8,
-  },
-  liveText: {
-    color: C.green,
-    fontFamily: "serif",
-    fontSize: 12,
-    fontWeight: "800",
-  },
+
 });

@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { AuctionCard } from "@/components/AuctionCard";
 import { BottomNav } from "@/components/BottomNav";
 import { ScreenHeader } from "@/components/ScreenHeader";
 
@@ -102,36 +103,6 @@ function ProductCard({
   );
 }
 
-function AuctionCard({ item }: { item: (typeof auctions)[number] }) {
-  return (
-    <View style={styles.auctionCard}>
-      <View style={styles.cardTitleRow}>
-        <Text style={styles.cardTitle} numberOfLines={1}>
-          {item.title}
-        </Text>
-        <MaterialIcons name="chevron-right" size={22} color={C.gold} />
-      </View>
-
-      <View style={styles.auctionBottomRow}>
-        <View style={styles.bidColumn}>
-          <Text style={styles.bidLine}>Mayor oferta actual</Text>
-          <Text style={styles.bidAmount}>{item.highestBid}</Text>
-          <Text style={styles.timeLeft}>{item.timeLeft}</Text>
-        </View>
-
-        <View style={styles.auctionAction}>
-          <View style={styles.liveRow}>
-            <View style={styles.liveDot} />
-            <Text style={styles.liveText}>{item.currency}</Text>
-          </View>
-          <TouchableOpacity style={styles.enterButton} activeOpacity={0.8}>
-            <Text style={styles.enterText}>Entrar</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </View>
-  );
-}
 
 export default function ProductosScreen() {
   const router = useRouter();
@@ -312,77 +283,5 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "900",
   },
-  auctionCard: {
-    backgroundColor: C.card,
-    borderColor: C.blueLine,
-    borderRadius: 15,
-    borderWidth: 1,
-    minHeight: 82,
-    paddingBottom: 8,
-    paddingHorizontal: 10,
-    paddingTop: 8,
-  },
-  auctionBottomRow: {
-    alignItems: "flex-end",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 4,
-  },
-  bidColumn: {
-    flex: 1,
-  },
-  bidLine: {
-    color: C.muted,
-    fontFamily: "serif",
-    fontSize: 12,
-  },
-  bidAmount: {
-    color: C.brightGold,
-    fontFamily: "serif",
-    fontSize: 15,
-    fontWeight: "900",
-  },
-  timeLeft: {
-    color: C.red,
-    fontFamily: "serif",
-    fontSize: 13,
-    fontWeight: "900",
-    marginTop: 1,
-  },
-  auctionAction: {
-    alignItems: "flex-end",
-    marginLeft: 8,
-  },
-  liveRow: {
-    alignItems: "center",
-    flexDirection: "row",
-    marginBottom: 5,
-  },
-  liveDot: {
-    backgroundColor: C.green,
-    borderRadius: 4,
-    height: 8,
-    marginRight: 4,
-    width: 8,
-  },
-  liveText: {
-    color: C.green,
-    fontFamily: "serif",
-    fontSize: 13,
-    fontWeight: "800",
-  },
-  enterButton: {
-    alignItems: "center",
-    backgroundColor: C.brightGold,
-    borderRadius: 11,
-    height: 26,
-    justifyContent: "center",
-    paddingHorizontal: 12,
-  },
-  enterText: {
-    color: "#111111",
-    fontFamily: "serif",
-    fontSize: 14,
-    fontWeight: "900",
-  },
+
 });
