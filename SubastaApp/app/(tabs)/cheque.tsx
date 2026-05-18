@@ -1,27 +1,14 @@
-import { Image } from "expo-image";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-} from "react-native";
-
-import { useRouter } from "expo-router";
+import { StyleSheet, Text, TextInput, View } from "react-native";
+import { BackButton } from "@/components/BackButton";
+import { LogoHeader } from "@/components/LogoHeader";
+import { PrimaryButton } from "@/components/PrimaryButton";
+import { inputStyles } from "@/styles/inputStyles";
 
 export default function ChequeScreen() {
-  const router = useRouter();
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-        <Text style={styles.backText}>{"< Back"}</Text>
-      </TouchableOpacity>
-      <View style={styles.logoContainer}>
-        <Image
-          source={require("@/assets/images/appicon.png")}
-          style={styles.logo}
-        />
-      </View>
+      <BackButton />
+      <LogoHeader />
 
       <Text style={styles.title}>AÑADIR CHEQUE CERTIFICADO</Text>
 
@@ -39,34 +26,16 @@ export default function ChequeScreen() {
         </View>
       </View>
 
-      <TextInput
-        placeholder="Monto del Cheque"
-        style={styles.input}
-        placeholderTextColor="#99988B"
-      />
-      <TextInput
-        placeholder="Banco Emisor"
-        style={styles.input}
-        placeholderTextColor="#99988B"
-      />
-      <TextInput
-        placeholder="Titular"
-        style={styles.input}
-        placeholderTextColor="#99988B"
-      />
-      <TextInput
-        placeholder="Número de Cheque"
-        style={styles.input}
-        placeholderTextColor="#99988B"
-      />
+      <TextInput placeholder="Monto del Cheque" style={inputStyles.input} placeholderTextColor="#99988B" />
+      <TextInput placeholder="Banco Emisor" style={inputStyles.input} placeholderTextColor="#99988B" />
+      <TextInput placeholder="Titular" style={inputStyles.input} placeholderTextColor="#99988B" />
+      <TextInput placeholder="Número de Cheque" style={inputStyles.input} placeholderTextColor="#99988B" />
 
       <Text style={styles.infoText}>
-        Monto disponible como fondo de garantía tras verificación. 
+        Monto disponible como fondo de garantía tras verificación.
       </Text>
 
-      <TouchableOpacity style={styles.button}>
-        <Text style={styles.buttonText}>REGISTRAR CHEQUE</Text>
-      </TouchableOpacity>
+      <PrimaryButton label="REGISTRAR CHEQUE" style={{ marginTop: 20 }} />
     </View>
   );
 }
@@ -134,17 +103,6 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: "#99988B",
   },
-  input: {
-    backgroundColor: "rgba(255,255,255,0.05)",
-    borderColor: "#bfc8d6",
-    borderWidth: 1,
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    color: "#e5e2c6",
-    fontSize: 16,
-    marginBottom: 12,
-  },
   infoText: {
     color: "#bfc8d6",
     fontSize: 13,
@@ -152,28 +110,4 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 10,
   },
-  button: {
-    backgroundColor: "#d4af37",
-    padding: 16,
-    borderRadius: 20,
-    marginTop: 20,
-  },
-  backButton: {
-    alignSelf: "flex-start",
-    marginBottom: 8,
-  },
-  backText: {
-    color: "#bfc8d6",
-    fontSize: 20,
-  },
-  logoContainer: {
-    marginBottom: 16,
-    alignItems: "center",
-  },
-  logo: {
-    width: 110,
-    height: 110,
-    marginBottom: 8,
-  },
-  buttonText: { textAlign: "center", fontWeight: "bold", fontSize: 20 },
 });

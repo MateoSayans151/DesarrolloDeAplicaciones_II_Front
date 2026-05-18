@@ -1,27 +1,14 @@
-import { Image } from "expo-image";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-} from "react-native";
-
-import { useRouter } from "expo-router";
+import { StyleSheet, Text, TextInput, View } from "react-native";
+import { BackButton } from "@/components/BackButton";
+import { LogoHeader } from "@/components/LogoHeader";
+import { PrimaryButton } from "@/components/PrimaryButton";
+import { inputStyles } from "@/styles/inputStyles";
 
 export default function CuentaBancariaScreen() {
-  const router = useRouter();
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-        <Text style={styles.backText}>{"< Back"}</Text>
-      </TouchableOpacity>
-      <View style={styles.logoContainer}>
-        <Image
-          source={require("@/assets/images/appicon.png")}
-          style={styles.logo}
-        />
-      </View>
+      <BackButton />
+      <LogoHeader />
       <Text style={styles.title}>AÑADIR CUENTA BANCARIA</Text>
 
       <View style={styles.bankIconContainer}>
@@ -53,19 +40,17 @@ export default function CuentaBancariaScreen() {
         </View>
       </View>
 
-      <TextInput placeholder="Titular de Cuenta" style={styles.input} placeholderTextColor= "#99988B" />
-      <TextInput placeholder="Tipo de Cuenta" style={styles.input} placeholderTextColor= "#99988B" />
-      <TextInput placeholder="Moneda" style={styles.input} placeholderTextColor= "#99988B" />
-      <TextInput placeholder="CBU / Alias" style={styles.input} placeholderTextColor= "#99988B" />
+      <TextInput placeholder="Titular de Cuenta" style={inputStyles.input} placeholderTextColor="#99988B" />
+      <TextInput placeholder="Tipo de Cuenta" style={inputStyles.input} placeholderTextColor="#99988B" />
+      <TextInput placeholder="Moneda" style={inputStyles.input} placeholderTextColor="#99988B" />
+      <TextInput placeholder="CBU / Alias" style={inputStyles.input} placeholderTextColor="#99988B" />
 
       <Text style={styles.infoText}>
         Se requiere acreditar el origen lícito de los fondos. Verificación hasta
         48 días hábiles
       </Text>
 
-      <TouchableOpacity style={styles.button}>
-        <Text style={styles.buttonText}>REGISTRAR CUENTA</Text>
-      </TouchableOpacity>
+      <PrimaryButton label="REGISTRAR CUENTA" style={{ marginTop: 20 }} />
     </View>
   );
 }
@@ -152,46 +137,11 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: "#99988B",
   },
-  input: {
-    backgroundColor: "rgba(255,255,255,0.05)",
-    borderColor: "#bfc8d6",
-    borderWidth: 1,
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    color: "#e5e2c6",
-    fontSize: 16,
-    marginBottom: 12,
-  },
-    backButton: {
-    alignSelf: "flex-start",
-    marginBottom: 8,
-  },
-  backText: {
-    color: "#bfc8d6",
-    fontSize: 20,
-  },
-  logoContainer: {
-    marginBottom: 16,
-    alignItems: "center",
-  },
-  logo: {
-    width: 110,
-    height: 110,
-    marginBottom: 8,
-  },
-  button: {
-    backgroundColor: "#d4af37",
-    padding: 16,
-    borderRadius: 20,
-    marginTop: 20,
-  },
-    infoText: {
+  infoText: {
     color: "#bfc8d6",
     fontSize: 13,
     textAlign: "center",
     marginTop: 10,
     marginBottom: 10,
   },
-  buttonText: { textAlign: "center", fontWeight: "bold", fontSize: 20 },
 });

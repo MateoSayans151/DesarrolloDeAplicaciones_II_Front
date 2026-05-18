@@ -1,30 +1,10 @@
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { AuctionCard } from "@/components/AuctionCard";
-import { BottomNav } from "@/components/BottomNav";
-import { ScreenHeader } from "@/components/ScreenHeader";
-
-const C = {
-  screen: "#00182b",
-  gold: "#aaa18e",
-  brightGold: "#e4bd56",
-  card: "#0f2a46",
-  line: "#706b55",
-  muted: "#b6ae9c",
-  green: "#17c885",
-  red: "#ff273a",
-  blueLine: "#3f6389",
-};
+import { ScreenLayout } from "@/components/ScreenLayout";
+import { C } from "@/styles/colors";
 
 const products = [
   {
@@ -103,75 +83,47 @@ function ProductCard({
   );
 }
 
-
 export default function ProductosScreen() {
   const router = useRouter();
 
   return (
-    <SafeAreaView style={styles.page}>
-      <StatusBar barStyle="light-content" backgroundColor={C.screen} />
-
-      <View style={styles.screen}>
-        <ScrollView
-          contentContainerStyle={styles.content}
-          showsVerticalScrollIndicator={false}
-        >
-          <ScreenHeader />
-
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>MIS PRODUCTOS</Text>
-            <TouchableOpacity style={styles.addButton} activeOpacity={0.8}>
-              <MaterialIcons name="add" size={22} color="#111111" />
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.list}>
-            {products.map((item) => (
-              <ProductCard
-                key={item.id}
-                item={item}
-                onInfo={(id) =>
-                  router.push(`/(tabs)/informacion-producto?id=${id}` as any)
-                }
-              />
-            ))}
-          </View>
-
-          <View style={[styles.sectionHeader, styles.secondSection]}>
-            <Text style={styles.sectionTitle}>MIS SUBASTAS</Text>
-            <TouchableOpacity style={styles.addButton} activeOpacity={0.8}>
-              <MaterialIcons name="add" size={22} color="#111111" />
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.list}>
-            {auctions.map((item) => (
-              <AuctionCard key={item.id} item={item} />
-            ))}
-          </View>
-        </ScrollView>
-
-        <BottomNav activeTab="productos" />
+    <ScreenLayout activeTab="productos">
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>MIS PRODUCTOS</Text>
+        <TouchableOpacity style={styles.addButton} activeOpacity={0.8}>
+          <MaterialIcons name="add" size={22} color="#111111" />
+        </TouchableOpacity>
       </View>
-    </SafeAreaView>
+
+      <View style={styles.list}>
+        {products.map((item) => (
+          <ProductCard
+            key={item.id}
+            item={item}
+            onInfo={(id) =>
+              router.push(`/(tabs)/informacion-producto?id=${id}` as any)
+            }
+          />
+        ))}
+      </View>
+
+      <View style={[styles.sectionHeader, styles.secondSection]}>
+        <Text style={styles.sectionTitle}>MIS SUBASTAS</Text>
+        <TouchableOpacity style={styles.addButton} activeOpacity={0.8}>
+          <MaterialIcons name="add" size={22} color="#111111" />
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.list}>
+        {auctions.map((item) => (
+          <AuctionCard key={item.id} item={item} />
+        ))}
+      </View>
+    </ScreenLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  page: {
-    backgroundColor: C.screen,
-    flex: 1,
-  },
-  screen: {
-    backgroundColor: C.screen,
-    flex: 1,
-    marginTop: 50,
-    overflow: "hidden",
-  },
-  content: {
-    paddingBottom: 92,
-    paddingHorizontal: 20,
-  },
   sectionHeader: {
     alignItems: "center",
     flexDirection: "row",
@@ -283,5 +235,4 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "900",
   },
-
 });

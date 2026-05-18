@@ -1,27 +1,14 @@
-import { Image } from "expo-image";
-import {
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import { useRouter } from "expo-router";
+import { StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { BackButton } from "@/components/BackButton";
+import { LogoHeader } from "@/components/LogoHeader";
+import { PrimaryButton } from "@/components/PrimaryButton";
+import { inputStyles } from "@/styles/inputStyles";
 
 export default function TarjetaScreen() {
-  const router = useRouter();
-
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-        <Text style={styles.backText}>{"< Back"}</Text>
-      </TouchableOpacity>
-      <View style={styles.logoContainer}>
-        <Image
-          source={require("@/assets/images/appicon.png")}
-          style={styles.logo}
-        />
-      </View>
+      <BackButton />
+      <LogoHeader />
       <Text style={styles.title}>AÑADIR TARJETA DE CRÉDITO</Text>
 
       <View style={styles.cardIconContainer}>
@@ -31,35 +18,17 @@ export default function TarjetaScreen() {
         </View>
       </View>
 
-      <TextInput
-        placeholder="Número de Tarjeta"
-        style={styles.input}
-        placeholderTextColor="#99988B"
-      />
-      <TextInput
-        placeholder="Nombre del Titular"
-        style={styles.input}
-        placeholderTextColor="#99988B"
-      />
-      <TextInput
-        placeholder="MM/AA"
-        style={styles.input}
-        placeholderTextColor="#99988B"
-      />
-      <TextInput
-        placeholder="CVV"
-        style={styles.input}
-        placeholderTextColor="#99988B"
-      />
+      <TextInput placeholder="Número de Tarjeta" style={inputStyles.input} placeholderTextColor="#99988B" />
+      <TextInput placeholder="Nombre del Titular" style={inputStyles.input} placeholderTextColor="#99988B" />
+      <TextInput placeholder="MM/AA" style={inputStyles.input} placeholderTextColor="#99988B" />
+      <TextInput placeholder="CVV" style={inputStyles.input} placeholderTextColor="#99988B" />
 
       <Text style={styles.infoText}>
         Al guardar, autoriza a Subasta App a verificar la validez mediante una
         retención temporal.
       </Text>
 
-      <TouchableOpacity style={styles.button}>
-        <Text style={styles.buttonText}>GUARDAR TARJETA</Text>
-      </TouchableOpacity>
+      <PrimaryButton label="GUARDAR TARJETA" style={{ marginTop: 20 }} />
     </View>
   );
 }
@@ -103,35 +72,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#99988B",
     alignSelf: "flex-end",
   },
-  button: {
-    backgroundColor: "#d4af37",
-    padding: 16,
-    borderRadius: 20,
-    marginTop: 20,
-  },
-  backButton: {
-    alignSelf: "flex-start",
-    marginBottom: 8,
-  },
-  backText: {
-    color: "#bfc8d6",
-    fontSize: 20,
-  },
-  logoContainer: {
-    marginBottom: 16,
-    alignItems: "center",
-  },
-  input: {
-    backgroundColor: "rgba(255,255,255,0.05)",
-    borderColor: "#bfc8d6",
-    borderWidth: 1,
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    color: "#e5e2c6",
-    fontSize: 16,
-    marginBottom: 12,
-  },
   infoText: {
     color: "#bfc8d6",
     fontSize: 13,
@@ -139,10 +79,4 @@ const styles = StyleSheet.create({
     marginTop: 2,
     marginBottom: 26,
   },
-  logo: {
-    width: 110,
-    height: 110,
-    marginBottom: 8,
-  },
-  buttonText: { textAlign: "center", fontWeight: "bold", fontSize: 20 },
 });

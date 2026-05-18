@@ -1,11 +1,7 @@
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Image } from "expo-image";
 import { StyleSheet, Text, View } from "react-native";
-
-const C = {
-  gold: "#aaa18e",
-  line: "#706b55",
-};
+import { C } from "@/styles/colors";
 
 type Props = {
   notificationCount?: number;

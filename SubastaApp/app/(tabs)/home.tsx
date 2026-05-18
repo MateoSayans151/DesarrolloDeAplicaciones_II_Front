@@ -1,28 +1,8 @@
 import { Image } from "expo-image";
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { AuctionCard } from "@/components/AuctionCard";
-import { BottomNav } from "@/components/BottomNav";
-import { ScreenHeader } from "@/components/ScreenHeader";
-
-const C = {
-  screen: "#00182b",
-  gold: "#aaa18e",
-  brightGold: "#e4bd56",
-  card: "#0f2a46",
-  line: "#706b55",
-  muted: "#b6ae9c",
-  green: "#17c885",
-  red: "#ff273a",
-  blueLine: "#3f6389",
-};
+import { ScreenLayout } from "@/components/ScreenLayout";
+import { C } from "@/styles/colors";
 
 const featuredAuctions = [
   {
@@ -88,64 +68,36 @@ function FeaturedCard({ item }: { item: (typeof featuredAuctions)[number] }) {
   );
 }
 
-
 export default function HomeScreen() {
   return (
-    <SafeAreaView style={styles.page}>
-      <StatusBar barStyle="light-content" backgroundColor={C.screen} />
+    <ScreenLayout activeTab="home">
+      <View style={styles.featuredCard}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.featuredTitle}>DESTACADOS</Text>
+          <TouchableOpacity style={styles.viewButton} activeOpacity={0.82}>
+            <Text style={styles.viewButtonText}>Ver</Text>
+          </TouchableOpacity>
+        </View>
 
-      <View style={styles.screen}>
-        <ScrollView
-          contentContainerStyle={styles.content}
-          showsVerticalScrollIndicator={false}
-        >
-          <ScreenHeader />
-
-          <View style={styles.featuredCard}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.featuredTitle}>DESTACADOS</Text>
-              <TouchableOpacity style={styles.viewButton} activeOpacity={0.82}>
-                <Text style={styles.viewButtonText}>Ver</Text>
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.featuredRow}>
-              {featuredAuctions.map((item) => (
-                <FeaturedCard key={item.id} item={item} />
-              ))}
-            </View>
-          </View>
-
-          <Text style={styles.sectionTitle}>SUBASTAS ABIERTAS</Text>
-
-          <View style={styles.list}>
-            {auctions.map((item) => (
-              <AuctionCard key={item.id} item={item} />
-            ))}
-          </View>
-        </ScrollView>
-
-        <BottomNav activeTab="home" />
+        <View style={styles.featuredRow}>
+          {featuredAuctions.map((item) => (
+            <FeaturedCard key={item.id} item={item} />
+          ))}
+        </View>
       </View>
-    </SafeAreaView>
+
+      <Text style={styles.sectionTitle}>SUBASTAS ABIERTAS</Text>
+
+      <View style={styles.list}>
+        {auctions.map((item) => (
+          <AuctionCard key={item.id} item={item} />
+        ))}
+      </View>
+    </ScreenLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  page: {
-    backgroundColor: C.screen,
-    flex: 1,
-  },
-  screen: {
-    backgroundColor: C.screen,
-    flex: 1,
-    marginTop: 50,
-    overflow: "hidden",
-  },
-  content: {
-    paddingBottom: 92,
-    paddingHorizontal: 20,
-  },
   featuredCard: {
     backgroundColor: C.card,
     borderColor: C.blueLine,
@@ -224,5 +176,4 @@ const styles = StyleSheet.create({
   list: {
     gap: 10,
   },
-
 });

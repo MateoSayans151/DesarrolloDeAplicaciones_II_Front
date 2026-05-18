@@ -1,25 +1,7 @@
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import { BottomNav } from "@/components/BottomNav";
-import { ScreenHeader } from "@/components/ScreenHeader";
-
-const C = {
-  screen: "#00182b",
-  gold: "#aaa18e",
-  brightGold: "#e4bd56",
-  line: "#706b55",
-  muted: "#b6ae9c",
-  green: "#17c885",
-  blueLine: "#3f6389",
-};
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ScreenLayout } from "@/components/ScreenLayout";
+import { C } from "@/styles/colors";
 
 const paymentMethods = [
   { id: "1", brand: "Visa", last4: "1234", status: "Verificado" },
@@ -86,104 +68,77 @@ function CategoryStatCard({
 
 export default function PerfilScreen() {
   return (
-    <SafeAreaView style={styles.page}>
-      <StatusBar barStyle="light-content" backgroundColor={C.screen} />
-
-      <View style={styles.screen}>
-        <ScrollView
-          contentContainerStyle={styles.content}
-          showsVerticalScrollIndicator={false}
-        >
-          <ScreenHeader />
-
-          <View style={styles.userData}>
-            <View style={styles.userRow}>
-              <Text style={styles.userLabel}>Usuario</Text>
-              <Text style={styles.userValue}>Admin</Text>
-            </View>
-            <View style={styles.userRow}>
-              <Text style={styles.userLabel}>Correo</Text>
-              <Text style={styles.userValue}>admin@gmail.com</Text>
-            </View>
-          </View>
-
-          <Text style={styles.sectionTitle}>MIS MEDIOS DE PAGO</Text>
-
-          <View style={styles.paymentList}>
-            {paymentMethods.map((item) => (
-              <PaymentMethodCard key={item.id} item={item} />
-            ))}
-          </View>
-
-          <TouchableOpacity style={styles.primaryButton} activeOpacity={0.82}>
-            <Text style={styles.primaryButtonText}>ANADIR NUEVO</Text>
-          </TouchableOpacity>
-
-          <View style={styles.securityCopy}>
-            <Text style={styles.securityText}>
-              Tu clave personal protege tu participacion en las subastas.
-            </Text>
-            <Text style={styles.securityText}>
-              Esta informacion es privada y esencial para tu participacion.
-            </Text>
-          </View>
-
-          <TouchableOpacity style={styles.primaryButton} activeOpacity={0.82}>
-            <Text style={styles.primaryButtonText}>ACTUALIZAR DATOS</Text>
-          </TouchableOpacity>
-
-          <View style={styles.statsSection}>
-            <View style={styles.statsDivider} />
-            <Text style={styles.statsTitle}>ESTADISTICAS</Text>
-            <View style={styles.statsGrid}>
-              {stats.map((item) => (
-                <StatCard key={item.id} item={item} />
-              ))}
-            </View>
-          </View>
-
-          <View style={styles.categorySection}>
-            <View style={styles.statsDivider} />
-            <Text style={styles.categoryTitle}>
-              PARTICIPACION POR CATEGORIA
-            </Text>
-            <View style={styles.categoryGrid}>
-              {categoryStats.map((item) => (
-                <CategoryStatCard key={item.id} item={item} />
-              ))}
-            </View>
-            <TouchableOpacity
-              style={styles.historyButton}
-              activeOpacity={0.82}
-            >
-              <Text style={styles.historyButtonText}>
-                VER HISTORIAL DE PUJAS
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-
-        <BottomNav activeTab="perfil" />
+    <ScreenLayout activeTab="perfil">
+      <View style={styles.userData}>
+        <View style={styles.userRow}>
+          <Text style={styles.userLabel}>Usuario</Text>
+          <Text style={styles.userValue}>Admin</Text>
+        </View>
+        <View style={styles.userRow}>
+          <Text style={styles.userLabel}>Correo</Text>
+          <Text style={styles.userValue}>admin@gmail.com</Text>
+        </View>
       </View>
-    </SafeAreaView>
+
+      <Text style={styles.sectionTitle}>MIS MEDIOS DE PAGO</Text>
+
+      <View style={styles.paymentList}>
+        {paymentMethods.map((item) => (
+          <PaymentMethodCard key={item.id} item={item} />
+        ))}
+      </View>
+
+      <TouchableOpacity style={styles.primaryButton} activeOpacity={0.82}>
+        <Text style={styles.primaryButtonText}>ANADIR NUEVO</Text>
+      </TouchableOpacity>
+
+      <View style={styles.securityCopy}>
+        <Text style={styles.securityText}>
+          Tu clave personal protege tu participacion en las subastas.
+        </Text>
+        <Text style={styles.securityText}>
+          Esta informacion es privada y esencial para tu participacion.
+        </Text>
+      </View>
+
+      <TouchableOpacity style={styles.primaryButton} activeOpacity={0.82}>
+        <Text style={styles.primaryButtonText}>ACTUALIZAR DATOS</Text>
+      </TouchableOpacity>
+
+      <View style={styles.statsSection}>
+        <View style={styles.statsDivider} />
+        <Text style={styles.statsTitle}>ESTADISTICAS</Text>
+        <View style={styles.statsGrid}>
+          {stats.map((item) => (
+            <StatCard key={item.id} item={item} />
+          ))}
+        </View>
+      </View>
+
+      <View style={styles.categorySection}>
+        <View style={styles.statsDivider} />
+        <Text style={styles.categoryTitle}>
+          PARTICIPACION POR CATEGORIA
+        </Text>
+        <View style={styles.categoryGrid}>
+          {categoryStats.map((item) => (
+            <CategoryStatCard key={item.id} item={item} />
+          ))}
+        </View>
+        <TouchableOpacity
+          style={styles.historyButton}
+          activeOpacity={0.82}
+        >
+          <Text style={styles.historyButtonText}>
+            VER HISTORIAL DE PUJAS
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </ScreenLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  page: {
-    backgroundColor: C.screen,
-    flex: 1,
-  },
-  screen: {
-    backgroundColor: C.screen,
-    flex: 1,
-    marginTop: 50,
-    overflow: "hidden",
-  },
-  content: {
-    paddingBottom: 92,
-    paddingHorizontal: 20,
-  },
   userData: {
     alignSelf: "center",
     marginBottom: 24,
