@@ -1,26 +1,8 @@
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Image } from "expo-image";
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import { BottomNav } from "@/components/BottomNav";
-import { ScreenHeader } from "@/components/ScreenHeader";
-
-const C = {
-  screen: "#00182b",
-  gold: "#aaa18e",
-  brightGold: "#e4bd56",
-  line: "#706b55",
-  muted: "#b6ae9c",
-  green: "#17c885",
-  blueLine: "#3f6389",
-};
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ScreenLayout } from "@/components/ScreenLayout";
+import { C } from "@/styles/colors";
 
 const bids = [
   {
@@ -85,46 +67,19 @@ function BidCard({ item }: { item: (typeof bids)[number] }) {
 
 export default function PujasScreen() {
   return (
-    <SafeAreaView style={styles.page}>
-      <StatusBar barStyle="light-content" backgroundColor={C.screen} />
+    <ScreenLayout activeTab="pujas">
+      <Text style={styles.sectionTitle}>MIS PUJAS</Text>
 
-      <View style={styles.screen}>
-        <ScrollView
-          contentContainerStyle={styles.content}
-          showsVerticalScrollIndicator={false}
-        >
-          <ScreenHeader />
-
-          <Text style={styles.sectionTitle}>MIS PUJAS</Text>
-
-          <View style={styles.bids}>
-            {bids.map((item) => (
-              <BidCard key={item.id} item={item} />
-            ))}
-          </View>
-        </ScrollView>
-
-        <BottomNav activeTab="pujas" />
+      <View style={styles.bids}>
+        {bids.map((item) => (
+          <BidCard key={item.id} item={item} />
+        ))}
       </View>
-    </SafeAreaView>
+    </ScreenLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  page: {
-    backgroundColor: C.screen,
-    flex: 1,
-  },
-  screen: {
-    backgroundColor: C.screen,
-    flex: 1,
-    marginTop: 50,
-    overflow: "hidden",
-  },
-  content: {
-    paddingBottom: 92,
-    paddingHorizontal: 20,
-  },
   sectionTitle: {
     color: C.gold,
     fontFamily: "serif",
@@ -139,7 +94,7 @@ const styles = StyleSheet.create({
   },
   bidCard: {
     alignItems: "center",
-    backgroundColor: "#0f2a46",
+    backgroundColor: C.card,
     borderColor: C.blueLine,
     borderRadius: 15,
     borderWidth: 1,

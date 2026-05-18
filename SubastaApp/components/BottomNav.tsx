@@ -1,12 +1,7 @@
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useRouter } from "expo-router";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-
-const C = {
-  screen: "#00182b",
-  gold: "#aaa18e",
-  muted: "#b6ae9c",
-};
+import { C } from "@/styles/colors";
 
 const TABS = [
   { id: "home", label: "HOME", icon: "radio-button-unchecked", badge: null, route: "/home" },

@@ -1,16 +1,7 @@
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Image } from "expo-image";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-
-const C = {
-  card: "#0f2a46",
-  gold: "#aaa18e",
-  brightGold: "#e4bd56",
-  blueLine: "#3f6389",
-  muted: "#b6ae9c",
-  green: "#17c885",
-  red: "#ff273a",
-};
+import { C } from "@/styles/colors";
 
 export interface AuctionCardItem {
   id: string;

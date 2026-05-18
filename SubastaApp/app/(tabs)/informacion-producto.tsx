@@ -1,27 +1,9 @@
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import { BottomNav } from "@/components/BottomNav";
-import { ScreenHeader } from "@/components/ScreenHeader";
-
-const C = {
-  screen: "#00182b",
-  gold: "#aaa18e",
-  brightGold: "#e4bd56",
-  card: "#1a3a52",
-  line: "#706b55",
-  muted: "#b6ae9c",
-  blueLine: "#3f6389",
-};
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ScreenLayout } from "@/components/ScreenLayout";
+import { C } from "@/styles/colors";
 
 const products = [
   {
@@ -64,77 +46,50 @@ export default function InformacionProductoScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.page}>
-      <StatusBar barStyle="light-content" backgroundColor={C.screen} />
-
-      <View style={styles.screen}>
-        <ScrollView
-          contentContainerStyle={styles.content}
-          showsVerticalScrollIndicator={false}
+    <ScreenLayout activeTab="productos" paddingBottom={100}>
+      {/* Back / Next nav */}
+      <View style={styles.navRow}>
+        <TouchableOpacity
+          style={styles.navButton}
+          onPress={goToPrev}
+          activeOpacity={0.75}
         >
-          <ScreenHeader />
+          <MaterialIcons name="chevron-left" size={22} color={C.gold} />
+          <Text style={styles.navText}>Back</Text>
+        </TouchableOpacity>
 
-          {/* Back / Next nav */}
-          <View style={styles.navRow}>
-            <TouchableOpacity
-              style={styles.navButton}
-              onPress={goToPrev}
-              activeOpacity={0.75}
-            >
-              <MaterialIcons name="chevron-left" size={22} color={C.gold} />
-              <Text style={styles.navText}>Back</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.navButton}
-              onPress={goToNext}
-              activeOpacity={0.75}
-            >
-              <Text style={styles.navText}>Next</Text>
-              <MaterialIcons name="chevron-right" size={22} color={C.gold} />
-            </TouchableOpacity>
-          </View>
-
-          {/* Product card */}
-          <View style={styles.productCard}>
-            <Text style={styles.cardTag}>PRODUCTO EN SUBASTA</Text>
-            <Text style={styles.cardTitle}>{product.title}</Text>
-            <Text style={styles.cardShortDesc}>{product.shortDescription}</Text>
-            <Image source={{ uri: product.image }} style={styles.productImage} />
-          </View>
-
-          {/* Description section */}
-          <Text style={styles.descLabel}>Descripción</Text>
-          <Text style={styles.descText}>{product.fullDescription}</Text>
-
-          <View style={styles.divider} />
-
-          <Text style={styles.privateNote}>
-            Esta información es privada y escencial para tu participación
-          </Text>
-        </ScrollView>
-
-        <BottomNav activeTab="productos" />
+        <TouchableOpacity
+          style={styles.navButton}
+          onPress={goToNext}
+          activeOpacity={0.75}
+        >
+          <Text style={styles.navText}>Next</Text>
+          <MaterialIcons name="chevron-right" size={22} color={C.gold} />
+        </TouchableOpacity>
       </View>
-    </SafeAreaView>
+
+      {/* Product card */}
+      <View style={styles.productCard}>
+        <Text style={styles.cardTag}>PRODUCTO EN SUBASTA</Text>
+        <Text style={styles.cardTitle}>{product.title}</Text>
+        <Text style={styles.cardShortDesc}>{product.shortDescription}</Text>
+        <Image source={{ uri: product.image }} style={styles.productImage} />
+      </View>
+
+      {/* Description section */}
+      <Text style={styles.descLabel}>Descripción</Text>
+      <Text style={styles.descText}>{product.fullDescription}</Text>
+
+      <View style={styles.divider} />
+
+      <Text style={styles.privateNote}>
+        Esta información es privada y escencial para tu participación
+      </Text>
+    </ScreenLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  page: {
-    backgroundColor: C.screen,
-    flex: 1,
-  },
-  screen: {
-    backgroundColor: C.screen,
-    flex: 1,
-    marginTop: 50,
-    overflow: "hidden",
-  },
-  content: {
-    paddingBottom: 100,
-    paddingHorizontal: 20,
-  },
   navRow: {
     alignItems: "center",
     flexDirection: "row",
