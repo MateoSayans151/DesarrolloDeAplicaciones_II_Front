@@ -2,6 +2,7 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Image } from "expo-image";
 import { StyleSheet, Text, View } from "react-native";
 import { C } from "@/styles/colors";
+import { XPLevelRing } from "./XPLevelRing";
 
 type Props = {
   notificationCount?: number;
@@ -23,8 +24,8 @@ export function ScreenHeader({ notificationCount = 3 }: Props) {
           <Text style={styles.sideLabel}>CATEGORIA: ORO</Text>
         </View>
 
-        <View style={styles.starCircle}>
-          <MaterialIcons name="star" size={48} color={C.gold} />
+        <View>
+          <XPLevelRing size={90} strokeWidth={3} tier="gold" />
         </View>
 
         <View style={styles.sideInfo}>
@@ -75,16 +76,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "800",
     textAlign: "center",
-  },
-  starCircle: {
-    alignItems: "center",
-    borderColor: C.line,
-    borderRadius: 38,
-    borderWidth: 2,
-    height: 76,
-    justifyContent: "center",
-    width: 76,
-  },
+  }, 
   bellBox: {
     alignItems: "center",
     height: 48,
