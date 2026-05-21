@@ -1,15 +1,41 @@
-import { StyleSheet, Text, TextInput, View } from "react-native";
+import { useRouter } from "expo-router";
+import { useState } from "react";
+import { Alert, StyleSheet, Text, TextInput, View } from "react-native";
 import { BackButton } from "@/components/BackButton";
 import { LogoHeader } from "@/components/LogoHeader";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { inputStyles } from "@/styles/inputStyles";
+import { useRegistro } from "@/context/RegistroContext";
 
 export default function CuentaBancariaScreen() {
+  const router = useRouter();
+  const { data, setMedioPago } = useRegistro();
+  const cuenta = data.medioPagos[0]?.tipo === "CUENTA_BANCARIA" ? data.medioPagos[0] : null;
+
+  const [cbu, setCbu] = useState(cuenta?.cbu ?? "");
+  const [alias, setAlias] = useState(cuenta?.alias ?? "");
+  const [banco, setBanco] = useState(cuenta?.banco ?? "");
+
+  const handleGuardar = () => {
+    if (!cbu || !alias || !banco) {
+      Alert.alert("Campos requeridos", "Completa los datos de la cuenta bancaria.");
+      return;
+    }
+
+    setMedioPago({
+      tipo: "CUENTA_BANCARIA",
+      cbu,
+      alias,
+      banco,
+    });
+    router.back();
+  };
+
   return (
     <View style={styles.container}>
       <BackButton />
       <LogoHeader />
-      <Text style={styles.title}>AÑADIR CUENTA BANCARIA</Text>
+      <Text style={styles.title}>ANADIR CUENTA BANCARIA</Text>
 
       <View style={styles.bankIconContainer}>
         <View style={styles.bankIcon}>
@@ -40,17 +66,35 @@ export default function CuentaBancariaScreen() {
         </View>
       </View>
 
-      <TextInput placeholder="Titular de Cuenta" style={inputStyles.input} placeholderTextColor="#99988B" />
-      <TextInput placeholder="Tipo de Cuenta" style={inputStyles.input} placeholderTextColor="#99988B" />
-      <TextInput placeholder="Moneda" style={inputStyles.input} placeholderTextColor="#99988B" />
-      <TextInput placeholder="CBU / Alias" style={inputStyles.input} placeholderTextColor="#99988B" />
+      <TextInput
+        placeholder="CBU"
+        style={inputStyles.input}
+        placeholderTextColor="#99988B"
+        value={cbu}
+        onChangeText={setCbu}
+        keyboardType="numeric"
+      />
+      <TextInput
+        placeholder="Alias"
+        style={inputStyles.input}
+        placeholderTextColor="#99988B"
+        value={alias}
+        onChangeText={setAlias}
+      />
+      <TextInput
+        placeholder="Banco"
+        style={inputStyles.input}
+        placeholderTextColor="#99988B"
+        value={banco}
+        onChangeText={setBanco}
+      />
 
       <Text style={styles.infoText}>
-        Se requiere acreditar el origen lícito de los fondos. Verificación hasta
-        48 días hábiles
+        Se requiere acreditar el origen licito de los fondos. Verificacion hasta
+        48 dias habiles.
       </Text>
 
-      <PrimaryButton label="REGISTRAR CUENTA" style={{ marginTop: 20 }} />
+      <PrimaryButton label="REGISTRAR CUENTA" style={{ marginTop: 20 }} onPress={handleGuardar} />
     </View>
   );
 }
