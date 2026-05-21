@@ -28,7 +28,7 @@ export default function HomeScreen() {
 
     setLoading(true);
     try {
-      const response = await fetch("http://172.20.10.5:8080/api/v1/usuarios/login", {
+      const response = await fetch("http://192.168.1.15:8080/api/v1/usuarios/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
