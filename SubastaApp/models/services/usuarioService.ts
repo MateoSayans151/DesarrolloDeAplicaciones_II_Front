@@ -21,6 +21,14 @@ export interface UsuarioResponse {
   fotoBase64?: string;
   verificado: "si" | "no";
   categoria?: "comun" | "especial" | "plata" | "oro" | "platino";
+  mediosPago?: PaymentMethod[];
+}
+
+export interface PaymentMethod {
+  id: number;
+  tipo: string;
+  ultimosNumeros: number;
+  verificado: "si" | "no";
 }
 
 export interface TokenResponse {

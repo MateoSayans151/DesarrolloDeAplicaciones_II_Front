@@ -1,8 +1,10 @@
 import { Image } from "expo-image";
+import { useEffect, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { AuctionCard } from "@/components/AuctionCard";
 import { ScreenLayout } from "@/components/ScreenLayout";
 import { C } from "@/styles/colors";
+import subastaService, { SubastaResponse } from "@/models/services/subastaService";
 
 const featuredAuctions = [
   {
@@ -25,35 +27,6 @@ const featuredAuctions = [
   },
 ];
 
-const auctions = [
-  {
-    id: "1",
-    title: "Subasta cuadros de arte",
-    highestBid: "$550",
-    currency: "Live USD",
-    timeLeft: "10:00 min restantes",
-    image:
-      "https://images.unsplash.com/photo-1547826039-bfc35e0f1ea8?w=120&h=120&fit=crop",
-  },
-  {
-    id: "2",
-    title: "Subasta productos Sony",
-    highestBid: "$3.400.000",
-    currency: "Live ARG",
-    timeLeft: "01:12 min restantes",
-    image:
-      "https://images.unsplash.com/photo-1588508065123-287b28e013da?w=120&h=120&fit=crop",
-  },
-  {
-    id: "3",
-    title: "Subasta coleccion Lego",
-    highestBid: "$1.200.000",
-    currency: "Live ARG",
-    timeLeft: "25:00 min restantes",
-    image:
-      "https://images.unsplash.com/photo-1587654780291-39c9404d746b?w=120&h=120&fit=crop",
-  },
-];
 
 function FeaturedCard({ item }: { item: (typeof featuredAuctions)[number] }) {
   return (
@@ -69,6 +42,20 @@ function FeaturedCard({ item }: { item: (typeof featuredAuctions)[number] }) {
 }
 
 export default function HomeScreen() {
+  const [subastas, setSubastas] = useState<SubastaResponse[]>([]);
+
+  useEffect(() => {
+    const cargar = async () => {
+      try {
+        const data = await subastaService.listarAbiertas();
+        setSubastas(data);
+      } catch {
+        // manejar error
+      }
+    };
+    cargar();
+  }, []);
+
   return (
     <ScreenLayout activeTab="home">
       <View style={styles.featuredCard}>
@@ -89,8 +76,17 @@ export default function HomeScreen() {
       <Text style={styles.sectionTitle}>SUBASTAS ABIERTAS</Text>
 
       <View style={styles.list}>
-        {auctions.map((item) => (
-          <AuctionCard key={item.id} item={item} />
+        {subastas.map((item) => (
+          <AuctionCard
+            key={item.id.toString()}
+            item={{
+              id: item.id.toString(),
+              title: item.ubicacion ?? `Subasta #${item.id}`,
+              highestBid: "-",
+              currency: item.categoria.toUpperCase(),
+              timeLeft: `${item.fecha} ${item.hora}`,
+            }}
+          />
         ))}
       </View>
     </ScreenLayout>

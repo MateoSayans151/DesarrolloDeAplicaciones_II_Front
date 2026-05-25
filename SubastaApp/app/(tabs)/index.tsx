@@ -12,6 +12,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import usuarioService from "@/models/services/usuarioService";
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -28,25 +29,11 @@ export default function HomeScreen() {
 
     setLoading(true);
     try {
-      const response = await fetch("http://192.168.1.15:8080/api/v1/usuarios/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ documento, password }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        await AsyncStorage.setItem("token", data.token);
-        await AsyncStorage.setItem("tipo", data.tipo);
-        router.replace("/home");
-      } else {
-        Alert.alert("Error", data?.mensaje || "Credenciales incorrectas.");
-      }
-    } catch (error) {
-      Alert.alert("Error", "No se pudo conectar con el servidor.");
+      const data = await usuarioService.login({ documento, password });
+      await AsyncStorage.setItem("tipo", data.tipo);
+      router.replace("/home");
+    } catch (error: any) {
+      Alert.alert("Error", error?.response?.data?.mensaje || "No se pudo conectar con el servidor.");
     } finally {
       setLoading(false);
     }
