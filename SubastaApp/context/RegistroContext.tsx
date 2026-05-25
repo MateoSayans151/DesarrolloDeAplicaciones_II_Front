@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from "react";
+import { API_BASE_URL } from "../config";
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 
@@ -111,7 +112,7 @@ export function RegistroProvider({ children }: { children: ReactNode }) {
         medioPagos: registroData.medioPagos,
       };
 
-      const response = await fetch("http://192.168.1.15:8080/api/v1/usuarios/registro", {
+      const response = await fetch(`${API_BASE_URL}/usuarios/registro`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),

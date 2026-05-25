@@ -1,12 +1,16 @@
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { ScreenLayout } from "@/components/ScreenLayout";
 import { C } from "@/styles/colors";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_BASE_URL } from "@/config";
+import { useEffect, useState } from "react";
+import usuarioService, { UsuarioResponse } from "@/models/services/usuarioService";
 
 const paymentMethods = [
-  { id: "1", brand: "Visa", last4: "1234", status: "Verificado" },
-  { id: "2", brand: "Visa", last4: "1234", status: "Verificado" },
-  { id: "3", brand: "Visa", last4: "1234", status: "Verificado" },
+  { id: 1, tipo: "Visa", ultimosNumeros: 1234, verificado: "si" },
+  { id: 2, tipo: "Visa", ultimosNumeros: 1234, verificado: "si" },
+  { id: 3, tipo: "Visa", ultimosNumeros: 1234, verificado: "si" },
 ];
 
 const stats = [
@@ -25,6 +29,7 @@ const categoryStats = [
   { id: "4", label: "HOGARENO", value: "8" },
 ];
 
+
 function PaymentMethodCard({
   item,
 }: {
@@ -33,12 +38,14 @@ function PaymentMethodCard({
   return (
     <View style={styles.paymentCard}>
       <Text style={styles.paymentText}>
-        {item.brand} **** {item.last4},
+        {item.tipo} **** {item.ultimosNumeros}
       </Text>
 
       <View style={styles.paymentStatus}>
-        <Text style={styles.verifiedText}>{item.status}</Text>
-        <MaterialIcons name="check-circle" size={19} color={C.green} />
+        <Text style={item.verificado === "si" ? styles.verifiedText : styles.notVerifiedText}>
+          {item.verificado}
+        </Text>
+        <MaterialIcons name={item.verificado === "si" ? "check-circle" : "cancel"} size={19} color={item.verificado === "si" ? C.green : C.red} />
       </View>
     </View>
   );
@@ -66,24 +73,40 @@ function CategoryStatCard({
   );
 }
 
+
 export default function PerfilScreen() {
+  const [usuario, setUsuario] = useState<UsuarioResponse | null>(null);
+  useEffect(() => {
+  const cargarUsuario = async () => {
+    try {
+      const data = await usuarioService.obtenerPerfil();
+      setUsuario(data);
+    } catch (error) {
+      Alert.alert("Error", "No se pudo cargar el perfil.");
+    }
+  };
+
+  cargarUsuario();
+}, []);
+
+
   return (
     <ScreenLayout activeTab="perfil">
       <View style={styles.userData}>
         <View style={styles.userRow}>
-          <Text style={styles.userLabel}>Usuario</Text>
-          <Text style={styles.userValue}>Admin</Text>
+          <Text style={styles.userLabel}>{usuario?.nombre}</Text>
+          <Text style={styles.userValue}>{usuario?.categoria}</Text>
         </View>
         <View style={styles.userRow}>
           <Text style={styles.userLabel}>Correo</Text>
-          <Text style={styles.userValue}>admin@gmail.com</Text>
+          <Text style={styles.userValue}>{usuario?.documento}</Text>
         </View>
       </View>
 
       <Text style={styles.sectionTitle}>MIS MEDIOS DE PAGO</Text>
 
       <View style={styles.paymentList}>
-        {paymentMethods.map((item) => (
+        {usuario?.mediosPago?.map((item) => (
           <PaymentMethodCard key={item.id} item={item} />
         ))}
       </View>
@@ -198,6 +221,12 @@ const styles = StyleSheet.create({
   },
   verifiedText: {
     color: C.green,
+    fontFamily: "serif",
+    fontSize: 15,
+    fontWeight: "900",
+  },
+  notVerifiedText: {
+    color: C.red,
     fontFamily: "serif",
     fontSize: 15,
     fontWeight: "900",
