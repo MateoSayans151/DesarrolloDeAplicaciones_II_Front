@@ -1,6 +1,7 @@
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Image } from "expo-image";
-import { StyleSheet, Text, View } from "react-native";
+import { useRouter } from "expo-router";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { C } from "@/styles/colors";
 import { XPLevelRing } from "./XPLevelRing";
 
@@ -9,6 +10,7 @@ type Props = {
 };
 
 export function ScreenHeader({ notificationCount = 3 }: Props) {
+  const router = useRouter();
   return (
     <>
       <Text style={styles.title}>SUBASTA APP</Text>
@@ -28,7 +30,11 @@ export function ScreenHeader({ notificationCount = 3 }: Props) {
           <XPLevelRing size={90} strokeWidth={3} tier="gold" />
         </View>
 
-        <View style={styles.sideInfo}>
+        <TouchableOpacity
+          style={styles.sideInfo}
+          activeOpacity={0.75}
+          onPress={() => router.push("/notificaciones")}
+        >
           <View style={styles.bellBox}>
             <MaterialIcons name="notifications-none" size={46} color={C.gold} />
             <View style={styles.notificationBadge}>
@@ -36,7 +42,7 @@ export function ScreenHeader({ notificationCount = 3 }: Props) {
             </View>
           </View>
           <Text style={styles.sideLabel}>NOTIFICACIONES</Text>
-        </View>
+        </TouchableOpacity>
       </View>
     </>
   );
