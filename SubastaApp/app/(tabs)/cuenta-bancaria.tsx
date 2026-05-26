@@ -10,23 +10,25 @@ import { useRegistro } from "@/context/RegistroContext";
 export default function CuentaBancariaScreen() {
   const router = useRouter();
   const { data, setMedioPago } = useRegistro();
-  const cuenta = data.medioPagos[0]?.tipo === "CUENTA_BANCARIA" ? data.medioPagos[0] : null;
+  const cuenta = data.medioPagos[0]?.tipo === "CUENTA" ? data.medioPagos[0] : null;
 
-  const [cbu, setCbu] = useState(cuenta?.cbu ?? "");
-  const [alias, setAlias] = useState(cuenta?.alias ?? "");
-  const [banco, setBanco] = useState(cuenta?.banco ?? "");
+  const [cbuAlias, setCbuAlias] = useState(cuenta?.cbuAlias ?? "");
+  const [titularCuenta, setTitularCuenta] = useState(cuenta?.titularCuenta ?? "");
+  const [tipoCuenta, setTipoCuenta] = useState(cuenta?.tipoCuenta ?? "");
+  const [moneda, setMoneda] = useState(cuenta?.moneda ?? "");
 
   const handleGuardar = () => {
-    if (!cbu || !alias || !banco) {
-      Alert.alert("Campos requeridos", "Completa los datos de la cuenta bancaria.");
+    if (!cbuAlias || !titularCuenta || !tipoCuenta || !moneda) {
+      Alert.alert("Campos requeridos", "Completa todos los datos de la cuenta bancaria.");
       return;
     }
 
     setMedioPago({
-      tipo: "CUENTA_BANCARIA",
-      cbu,
-      alias,
-      banco,
+      tipo: "CUENTA",
+      cbuAlias,
+      titularCuenta,
+      tipoCuenta,
+      moneda,
     });
     router.back();
   };
@@ -67,26 +69,32 @@ export default function CuentaBancariaScreen() {
       </View>
 
       <TextInput
-        placeholder="CBU"
+        placeholder="CBU / Alias"
         style={inputStyles.input}
         placeholderTextColor="#99988B"
-        value={cbu}
-        onChangeText={setCbu}
-        keyboardType="numeric"
+        value={cbuAlias}
+        onChangeText={setCbuAlias}
       />
       <TextInput
-        placeholder="Alias"
+        placeholder="Titular de la Cuenta"
         style={inputStyles.input}
         placeholderTextColor="#99988B"
-        value={alias}
-        onChangeText={setAlias}
+        value={titularCuenta}
+        onChangeText={setTitularCuenta}
       />
       <TextInput
-        placeholder="Banco"
+        placeholder="Tipo de Cuenta (ej: Caja de Ahorro)"
         style={inputStyles.input}
         placeholderTextColor="#99988B"
-        value={banco}
-        onChangeText={setBanco}
+        value={tipoCuenta}
+        onChangeText={setTipoCuenta}
+      />
+      <TextInput
+        placeholder="Moneda (ej: ARS)"
+        style={inputStyles.input}
+        placeholderTextColor="#99988B"
+        value={moneda}
+        onChangeText={setMoneda}
       />
 
       <Text style={styles.infoText}>

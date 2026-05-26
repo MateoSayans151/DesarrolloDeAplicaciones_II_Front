@@ -51,7 +51,7 @@ export default function HomeScreen() {
         <Text style={styles.title}>BIENVENIDO A{"\n"}SUBASTA APP</Text>
         <View style={styles.inputContainer}>
           <TextInput
-            placeholder="Usuario"
+            placeholder="DNI"
             placeholderTextColor="#99988B"
             style={styles.input}
             value={documento}

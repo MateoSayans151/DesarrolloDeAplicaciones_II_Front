@@ -3,7 +3,7 @@ import { API_BASE_URL } from "../config";
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 
-export type TipoMedioPago = "CHEQUE" | "TARJETA" | "CUENTA_BANCARIA";
+export type TipoMedioPago = "CHEQUE" | "TARJETA" | "CUENTA";
 
 export interface MedioPago {
   tipo: TipoMedioPago;
@@ -23,9 +23,10 @@ export interface MedioPago {
   fechaVencimiento?: string;
   cvv?: string;
   // Cuenta bancaria
-  cbu?: string;
-  alias?: string;
-  banco?: string;
+  cbuAlias?: string;
+  titularCuenta?: string;
+  tipoCuenta?: string;
+  moneda?: string;
 }
 
 export interface RegistroData {
@@ -119,8 +120,13 @@ export function RegistroProvider({ children }: { children: ReactNode }) {
       });
 
       if (!response.ok) {
-        const msg = await response.text();
-        throw new Error(msg || `Error ${response.status}`);
+        const text = await response.text();
+        try {
+          const json = JSON.parse(text);
+          throw new Error(json.mensaje ?? text);
+        } catch {
+          throw new Error(text || `Error ${response.status}`);
+        }
       }
 
       resetRegistro();

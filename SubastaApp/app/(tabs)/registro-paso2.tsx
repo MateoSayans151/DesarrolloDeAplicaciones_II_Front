@@ -13,10 +13,11 @@ import { LogoHeader } from "@/components/LogoHeader";
 import { PasswordInput } from "@/components/PasswordInput";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { TipoMedioPago, useRegistro } from "@/context/RegistroContext";
+import usuarioService from "@/models/services/usuarioService";
 
 const paymentLabels: Record<TipoMedioPago, string> = {
   TARJETA: "Tarjeta cargada",
-  CUENTA_BANCARIA: "Cuenta bancaria cargada",
+  CUENTA: "Cuenta bancaria cargada",
   CHEQUE: "Cheque cargado",
 };
 
@@ -53,11 +54,16 @@ export default function RegistroPaso2() {
 
     try {
       await submitRegistro(registroCompleto);
-      Alert.alert(
-        "Registro enviado",
-        "Tus datos fueron enviados. Recibiras un correo cuando sean verificados.",
-        [{ text: "OK", onPress: () => router.replace("/") }]
-      );
+      try {
+        await usuarioService.login({ documento: registroCompleto.documento, password });
+        router.replace("/home");
+      } catch {
+        Alert.alert(
+          "Registro enviado",
+          "Tus datos fueron enviados. Recibiras un correo cuando sean verificados.",
+          [{ text: "OK", onPress: () => router.replace("/") }]
+        );
+      }
     } catch (e: any) {
       Alert.alert("Error al registrar", e.message ?? "Intenta de nuevo mas tarde.");
     }
@@ -109,7 +115,7 @@ export default function RegistroPaso2() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.option, medioPago?.tipo === "CUENTA_BANCARIA" && styles.optionSelected]}
+          style={[styles.option, medioPago?.tipo === "CUENTA" && styles.optionSelected]}
           onPress={() => router.push("/cuenta-bancaria")}
         >
           <Text style={styles.optionText}>ANADIR CUENTA BANCARIA</Text>

@@ -5,6 +5,7 @@ import { C } from "@/styles/colors";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from "@/config";
 import { useEffect, useState } from "react";
+import { useRouter } from "expo-router";
 import usuarioService, { UsuarioResponse } from "@/models/services/usuarioService";
 
 const paymentMethods = [
@@ -75,7 +76,14 @@ function CategoryStatCard({
 
 
 export default function PerfilScreen() {
+  const router = useRouter();
   const [usuario, setUsuario] = useState<UsuarioResponse | null>(null);
+
+  const handleLogout = async () => {
+    await usuarioService.logout();
+    router.replace("/");
+  };
+
   useEffect(() => {
   const cargarUsuario = async () => {
     try {
@@ -157,6 +165,10 @@ export default function PerfilScreen() {
           </Text>
         </TouchableOpacity>
       </View>
+
+      <TouchableOpacity style={styles.logoutButton} activeOpacity={0.82} onPress={handleLogout}>
+        <Text style={styles.logoutButtonText}>CERRAR SESIÓN</Text>
+      </TouchableOpacity>
     </ScreenLayout>
   );
 }
@@ -365,6 +377,22 @@ const styles = StyleSheet.create({
   },
   historyButtonText: {
     color: "#111111",
+    fontFamily: "serif",
+    fontSize: 16,
+    fontWeight: "900",
+  },
+  logoutButton: {
+    alignItems: "center",
+    borderColor: C.red,
+    borderRadius: 8,
+    borderWidth: 1.5,
+    height: 36,
+    justifyContent: "center",
+    marginTop: 24,
+    marginBottom: 16,
+  },
+  logoutButtonText: {
+    color: C.red,
     fontFamily: "serif",
     fontSize: 16,
     fontWeight: "900",
