@@ -8,6 +8,22 @@ export interface UsuarioRegistroRequest {
   password: string;
 }
 
+export interface RegistroInicialRequest {
+  documento: string;
+  nombre: string;
+  apellido: string;
+  pais: string;
+  domicilio: string;
+  fotoDocumentoFrente: string;
+  fotoDocumentoDorso: string;
+}
+
+export interface RegistroFinalRequest {
+  password: string;
+  medioPagos: any[];
+}
+
+
 export interface LoginRequest {
   documento: string;
   password: string;
@@ -81,6 +97,22 @@ const usuarioService = {
   async isLoggedIn(): Promise<boolean> {
     const token = await AsyncStorage.getItem("token");
     return !!token;
+  },
+
+  async registroInicial(data: RegistroInicialRequest): Promise<UsuarioResponse> {
+    const res = await api.post<UsuarioResponse>("/usuarios/registro-inicial", data);
+    return res.data;
+  },
+
+  async registroFinal(data: RegistroFinalRequest): Promise<UsuarioResponse> {
+    const res = await api.post<UsuarioResponse>("/usuarios/registro-final", data);
+    return res.data;
+  },
+
+  async obtenerTokenRegistroDev(documento: string): Promise<TokenResponse> {
+    const res = await api.get<TokenResponse>(`/usuarios/token-registro-dev/${documento}`);
+    await AsyncStorage.setItem("token", res.data.token);
+    return res.data;
   },
 };
 

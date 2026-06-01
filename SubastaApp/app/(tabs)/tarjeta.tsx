@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { Alert, StyleSheet, Text, TextInput, View } from "react-native";
+import { Alert, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { BackButton } from "@/components/BackButton";
 import { LogoHeader } from "@/components/LogoHeader";
 import { PrimaryButton } from "@/components/PrimaryButton";
@@ -51,7 +51,7 @@ export default function TarjetaScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 32 }}>
       <BackButton />
       <LogoHeader />
       <Text style={styles.title}>ANADIR TARJETA DE CREDITO</Text>
@@ -104,7 +104,7 @@ export default function TarjetaScreen() {
       </Text>
 
       <PrimaryButton label="GUARDAR TARJETA" style={{ marginTop: 20 }} onPress={handleGuardar} />
-    </View>
+    </ScrollView>
   );
 }
 

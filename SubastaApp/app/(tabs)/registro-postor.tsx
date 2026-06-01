@@ -15,7 +15,8 @@ import { BackButton } from "@/components/BackButton";
 import { LogoHeader } from "@/components/LogoHeader";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { inputStyles } from "@/styles/inputStyles";
-import { useRegistro } from "@/context/RegistroContext"; // ← ajustá el path si es diferente
+import { useRegistro } from "@/context/RegistroContext";
+import usuarioService from "@/models/services/usuarioService";
 
 // ─── Helper: URI → base64 ─────────────────────────────────────────────────────
 
@@ -40,9 +41,9 @@ export default function RegistroPostorScreen() {
   const router = useRouter();
   const { data, setPaso1 } = useRegistro();
 
-  // Estado local de UI (previews de imágenes)
   const [frenteUri, setFrenteUri] = useState<string | null>(null);
   const [dorsoUri, setDorsoUri] = useState<string | null>(null);
+  const [enviando, setEnviando] = useState(false);
 
   // Campos de texto locales (sincronizados al avanzar)
   const [nombre, setNombre] = useState(data.nombre);
@@ -72,7 +73,6 @@ export default function RegistroPostorScreen() {
   };
 
   const handleSiguiente = async () => {
-    // Validaciones básicas
     if (!nombre || !apellido || !domicilio || !pais || !documento) {
       Alert.alert("Campos requeridos", "Por favor completá todos los datos personales.");
       return;
@@ -82,8 +82,8 @@ export default function RegistroPostorScreen() {
       return;
     }
 
+    setEnviando(true);
     try {
-      // Convertir imágenes a base64 antes de guardar en el Context
       const [frenteB64, dorsoB64] = await Promise.all([
         uriToBase64(frenteUri),
         uriToBase64(dorsoUri),
@@ -99,9 +99,21 @@ export default function RegistroPostorScreen() {
         fotoDocumentoDorso: dorsoB64,
       });
 
-      router.push("/registro-paso2");
-    } catch {
-      Alert.alert("Error", "No se pudieron procesar las imágenes. Intentá de nuevo.");
+      await usuarioService.registroInicial({
+        documento,
+        nombre,
+        apellido,
+        pais,
+        domicilio,
+        fotoDocumentoFrente: frenteB64,
+        fotoDocumentoDorso: dorsoB64,
+      });
+
+      router.push("/(tabs)/registro-verificacion" as any);
+    } catch (e: any) {
+      Alert.alert("Error", e.message ?? "No se pudo completar el registro. Intentá de nuevo.");
+    } finally {
+      setEnviando(false);
     }
   };
 
@@ -184,9 +196,9 @@ export default function RegistroPostorScreen() {
       </Text>
 
       <PrimaryButton
-        label="SIGUIENTE"
+        label={enviando ? "ENVIANDO..." : "SIGUIENTE"}
         onPress={handleSiguiente}
-        style={{ width: "100%", marginBottom: 8 }}
+        style={{ width: "100%", marginBottom: 8, opacity: enviando ? 0.6 : 1 }}
       />
     </ScrollView>
   );

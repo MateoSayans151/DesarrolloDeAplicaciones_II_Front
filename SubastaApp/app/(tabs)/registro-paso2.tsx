@@ -23,10 +23,11 @@ const paymentLabels: Record<TipoMedioPago, string> = {
 
 export default function RegistroPaso2() {
   const router = useRouter();
-  const { data, setPaso2, submitRegistro, loading } = useRegistro();
+  const { data, setPaso2, resetRegistro } = useRegistro();
 
   const [password, setPassword] = useState(data.password);
   const [confirmar, setConfirmar] = useState(data.password);
+  const [loading, setLoading] = useState(false);
 
   const medioPago = data.medioPagos[0];
 
@@ -44,28 +45,26 @@ export default function RegistroPaso2() {
       return;
     }
 
-    const registroCompleto = {
-      ...data,
-      password,
-      medioPagos: [medioPago],
-    };
-
     setPaso2(password, [medioPago]);
+    setLoading(true);
 
     try {
-      await submitRegistro(registroCompleto);
+      await usuarioService.registroFinal({ password, medioPagos: [medioPago] });
+      resetRegistro();
       try {
-        await usuarioService.login({ documento: registroCompleto.documento, password });
+        await usuarioService.login({ documento: data.documento, password });
         router.replace("/home");
       } catch {
         Alert.alert(
-          "Registro enviado",
-          "Tus datos fueron enviados. Recibiras un correo cuando sean verificados.",
+          "Registro completado",
+          "Tu cuenta fue creada. Inicia sesion para continuar.",
           [{ text: "OK", onPress: () => router.replace("/") }]
         );
       }
     } catch (e: any) {
       Alert.alert("Error al registrar", e.message ?? "Intenta de nuevo mas tarde.");
+    } finally {
+      setLoading(false);
     }
   };
 

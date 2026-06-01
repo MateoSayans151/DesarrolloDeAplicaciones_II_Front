@@ -1,12 +1,14 @@
+import usuarioService, {
+  UsuarioResponse,
+} from "@/models/services/usuarioService";
+import { C } from "@/styles/colors";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Image } from "expo-image";
-import { useState } from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useRouter } from "expo-router";
-import { C } from "@/styles/colors";
-import { XPLevelRing } from "./XPLevelRing";
+import { useEffect, useState } from "react";
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { NotificationsPanel } from "../app/(tabs)/Notificaciones";
-
+import { XPLevelRing } from "./XPLevelRing";
 type Props = {
   notificationCount?: number;
 };
@@ -14,6 +16,21 @@ type Props = {
 export function ScreenHeader({ notificationCount = 3 }: Props) {
   const router = useRouter();
   const [showNotifs, setShowNotifs] = useState(false);
+
+  const [usuario, setUsuario] = useState<UsuarioResponse | null>(null);
+
+  useEffect(() => {
+    const cargarUsuario = async () => {
+      try {
+        const data = await usuarioService.obtenerPerfil();
+        setUsuario(data);
+      } catch (error) {
+        Alert.alert("Error", "No se pudo cargar el perfil.");
+      }
+    };
+
+    cargarUsuario();
+  }, []);
 
   return (
     <>
@@ -33,7 +50,7 @@ export function ScreenHeader({ notificationCount = 3 }: Props) {
             style={styles.avatar}
           />
           <Text style={styles.sideLabel} numberOfLines={1} adjustsFontSizeToFit>
-            CATEGORIA: ORO
+            CATEGORIA: {usuario?.categoria?.toUpperCase() || "COMUN"}
           </Text>
         </TouchableOpacity>
 
