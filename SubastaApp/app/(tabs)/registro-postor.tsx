@@ -48,7 +48,10 @@ export default function RegistroPostorScreen() {
   // Campos de texto locales (sincronizados al avanzar)
   const [nombre, setNombre] = useState(data.nombre);
   const [apellido, setApellido] = useState(data.apellido);
-  const [domicilio, setDomicilio] = useState(data.domicilio);
+  const [localidad, setLocalidad] = useState(data.localidad);
+  const [calle, setCalle] = useState(data.calle);
+  const [numeroCalle, setNumeroCalle] = useState(data.numeroCalle ? String(data.numeroCalle) : "");
+  const [codigoPostal, setCodigoPostal] = useState(data.codigoPostal ? String(data.codigoPostal) : "");
   const [pais, setPais] = useState(data.pais);
   const [documento, setDocumento] = useState(data.documento);
 
@@ -73,7 +76,7 @@ export default function RegistroPostorScreen() {
   };
 
   const handleSiguiente = async () => {
-    if (!nombre || !apellido || !domicilio || !pais || !documento) {
+    if (!nombre || !apellido || !documento || !localidad || !calle || !numeroCalle || !codigoPostal || !pais) {
       Alert.alert("Campos requeridos", "Por favor completá todos los datos personales.");
       return;
     }
@@ -92,7 +95,10 @@ export default function RegistroPostorScreen() {
       setPaso1({
         nombre,
         apellido,
-        domicilio,
+        localidad,
+        calle,
+        numeroCalle: parseInt(numeroCalle, 10),
+        codigoPostal: parseInt(codigoPostal, 10),
         pais,
         documento,
         fotoDocumentoFrente: frenteB64,
@@ -104,7 +110,10 @@ export default function RegistroPostorScreen() {
         nombre,
         apellido,
         pais,
-        domicilio,
+        localidad,
+        calle,
+        numeroCalle: parseInt(numeroCalle, 10),
+        codigoPostal: parseInt(codigoPostal, 10),
         fotoDocumentoFrente: frenteB64,
         fotoDocumentoDorso: dorsoB64,
       });
@@ -157,11 +166,34 @@ export default function RegistroPostorScreen() {
           keyboardType="numeric"
         />
         <TextInput
-          placeholder="Domicilio Legal"
+          placeholder="Localidad"
           placeholderTextColor="#99988B"
           style={inputStyles.input}
-          value={domicilio}
-          onChangeText={setDomicilio}
+          value={localidad}
+          onChangeText={setLocalidad}
+        />
+        <TextInput
+          placeholder="Calle"
+          placeholderTextColor="#99988B"
+          style={inputStyles.input}
+          value={calle}
+          onChangeText={setCalle}
+        />
+        <TextInput
+          placeholder="Número de calle"
+          placeholderTextColor="#99988B"
+          style={inputStyles.input}
+          value={numeroCalle}
+          onChangeText={setNumeroCalle}
+          keyboardType="numeric"
+        />
+        <TextInput
+          placeholder="Código postal"
+          placeholderTextColor="#99988B"
+          style={inputStyles.input}
+          value={codigoPostal}
+          onChangeText={setCodigoPostal}
+          keyboardType="numeric"
         />
         <TextInput
           placeholder="País de Origen"

@@ -1,3 +1,8 @@
+import { LogoHeader } from "@/components/LogoHeader";
+import { PrimaryButton } from "@/components/PrimaryButton";
+import { useRegistro } from "@/context/RegistroContext";
+import usuarioService from "@/models/services/usuarioService";
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
@@ -6,11 +11,6 @@ import {
   Text,
   View,
 } from "react-native";
-import { useRouter } from "expo-router";
-import { LogoHeader } from "@/components/LogoHeader";
-import { PrimaryButton } from "@/components/PrimaryButton";
-import { useRegistro } from "@/context/RegistroContext";
-import usuarioService from "@/models/services/usuarioService";
 
 type Estado = "esperando" | "verificando" | "no_verificado";
 
@@ -55,11 +55,12 @@ export default function RegistroVerificacionScreen() {
             onPress={verificar}
             style={styles.button}
           />
-          <PrimaryButton
+
+          {/* <PrimaryButton
             label="VOLVER AL INICIO DE SESION"
             onPress={handleVolver}
             style={[styles.button, styles.buttonSecondary]}
-          />
+          /> */}
         </>
       ) : (
         <>

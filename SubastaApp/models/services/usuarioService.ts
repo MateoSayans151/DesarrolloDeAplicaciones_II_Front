@@ -4,7 +4,14 @@ import api from "./api";
 export interface UsuarioRegistroRequest {
   documento: string;
   nombre: string;
-  direccion?: string;
+  apellido: string;
+  localidad: string;
+  calle: string;
+  numeroCalle: number;
+  codigoPostal: number;
+  pais: string;
+  fotoDocumentoFrente: string;
+  fotoDocumentoDorso: string;
   password: string;
 }
 
@@ -13,7 +20,10 @@ export interface RegistroInicialRequest {
   nombre: string;
   apellido: string;
   pais: string;
-  domicilio: string;
+  localidad: string;
+  calle: string;
+  numeroCalle: number;
+  codigoPostal: number;
   fotoDocumentoFrente: string;
   fotoDocumentoDorso: string;
 }
@@ -110,7 +120,7 @@ const usuarioService = {
   },
 
   async obtenerTokenRegistroDev(documento: string): Promise<TokenResponse> {
-    const res = await api.get<TokenResponse>(`/usuarios/token-registro-dev/${documento}`);
+    const res = await api.get<TokenResponse>(`/usuarios/dev/token-registro/${documento}`);
     await AsyncStorage.setItem("token", res.data.token);
     return res.data;
   },

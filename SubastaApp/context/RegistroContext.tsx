@@ -32,7 +32,10 @@ export interface RegistroData {
   // Paso 1
   nombre: string;
   apellido: string;
-  domicilio: string;
+  localidad: string;
+  calle: string;
+  numeroCalle: number;
+  codigoPostal: number;
   pais: string;
   documento: string;
   fotoDocumentoFrente: string | null; // base64
@@ -56,7 +59,10 @@ interface RegistroContextType {
 const initialData: RegistroData = {
   nombre: "",
   apellido: "",
-  domicilio: "",
+  localidad: "",
+  calle: "",
+  numeroCalle: 0,
+  codigoPostal: 0,
   pais: "",
   documento: "",
   fotoDocumentoFrente: null,

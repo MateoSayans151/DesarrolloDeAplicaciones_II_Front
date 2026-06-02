@@ -7,7 +7,7 @@ import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { NotificationsPanel } from "../app/(tabs)/Notificaciones";
+import { NotificationsPanel } from "../app/(tabs)/notificaciones";
 import { XPLevelRing } from "./XPLevelRing";
 type Props = {
   notificationCount?: number;
@@ -44,9 +44,7 @@ export function ScreenHeader({ notificationCount = 3 }: Props) {
           activeOpacity={0.75}
         >
           <Image
-            source={{
-              uri: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&h=120&fit=crop&crop=face",
-            }}
+            source={usuario?.fotoBase64 ? { uri: usuario.fotoBase64 } : undefined}
             style={styles.avatar}
           />
           <Text style={styles.sideLabel} numberOfLines={1} adjustsFontSizeToFit>
@@ -115,7 +113,7 @@ const styles = StyleSheet.create({
   sideLabel: {
     color: C.gold,
     fontFamily: "serif",
-    fontSize: 24,
+    fontSize: 10,
     fontWeight: "800",
     textAlign: "center",
   },
