@@ -1,25 +1,38 @@
-import { useRouter } from "expo-router";
-import { useState } from "react";
-import { Alert, StyleSheet, Text, TextInput, View } from "react-native";
 import { BackButton } from "@/components/BackButton";
 import { LogoHeader } from "@/components/LogoHeader";
 import { PrimaryButton } from "@/components/PrimaryButton";
-import { inputStyles } from "@/styles/inputStyles";
 import { useRegistro } from "@/context/RegistroContext";
+import { inputStyles } from "@/styles/inputStyles";
+import { useRouter } from "expo-router";
+import { useState } from "react";
+import {
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
 export default function CuentaBancariaScreen() {
   const router = useRouter();
   const { data, setMedioPago } = useRegistro();
-  const cuenta = data.medioPagos[0]?.tipo === "CUENTA" ? data.medioPagos[0] : null;
+  const cuenta =
+    data.medioPagos[0]?.tipo === "CUENTA" ? data.medioPagos[0] : null;
 
   const [cbuAlias, setCbuAlias] = useState(cuenta?.cbuAlias ?? "");
-  const [titularCuenta, setTitularCuenta] = useState(cuenta?.titularCuenta ?? "");
+  const [titularCuenta, setTitularCuenta] = useState(
+    cuenta?.titularCuenta ?? "",
+  );
   const [tipoCuenta, setTipoCuenta] = useState(cuenta?.tipoCuenta ?? "");
   const [moneda, setMoneda] = useState(cuenta?.moneda ?? "");
 
   const handleGuardar = () => {
     if (!cbuAlias || !titularCuenta || !tipoCuenta || !moneda) {
-      Alert.alert("Campos requeridos", "Completa todos los datos de la cuenta bancaria.");
+      Alert.alert(
+        "Campos requeridos",
+        "Completa todos los datos de la cuenta bancaria.",
+      );
       return;
     }
 
@@ -34,7 +47,10 @@ export default function CuentaBancariaScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={{ paddingBottom: 32 }}
+    >
       <BackButton />
       <LogoHeader />
       <Text style={styles.title}>ANADIR CUENTA BANCARIA</Text>
@@ -102,8 +118,12 @@ export default function CuentaBancariaScreen() {
         48 dias habiles.
       </Text>
 
-      <PrimaryButton label="REGISTRAR CUENTA" style={{ marginTop: 20 }} onPress={handleGuardar} />
-    </View>
+      <PrimaryButton
+        label="REGISTRAR CUENTA"
+        style={{ marginTop: 20 }}
+        onPress={handleGuardar}
+      />
+    </ScrollView>
   );
 }
 

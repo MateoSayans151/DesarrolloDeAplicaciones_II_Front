@@ -1,12 +1,14 @@
+import usuarioService, {
+  UsuarioResponse,
+} from "@/models/services/usuarioService";
+import { C } from "@/styles/colors";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Image } from "expo-image";
-import { useState } from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useRouter } from "expo-router";
-import { C } from "@/styles/colors";
+import { useEffect, useState } from "react";
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { NotificationsPanel } from "../app/(tabs)/notificaciones";
 import { XPLevelRing } from "./XPLevelRing";
-import { NotificationsPanel } from "../app/(tabs)/Notificaciones";
-
 type Props = {
   notificationCount?: number;
 };
@@ -14,6 +16,21 @@ type Props = {
 export function ScreenHeader({ notificationCount = 3 }: Props) {
   const router = useRouter();
   const [showNotifs, setShowNotifs] = useState(false);
+
+  const [usuario, setUsuario] = useState<UsuarioResponse | null>(null);
+
+  useEffect(() => {
+    const cargarUsuario = async () => {
+      try {
+        const data = await usuarioService.obtenerPerfil();
+        setUsuario(data);
+      } catch (error) {
+        Alert.alert("Error", "No se pudo cargar el perfil.");
+      }
+    };
+
+    cargarUsuario();
+  }, []);
 
   return (
     <>
@@ -27,13 +44,11 @@ export function ScreenHeader({ notificationCount = 3 }: Props) {
           activeOpacity={0.75}
         >
           <Image
-            source={{
-              uri: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&h=120&fit=crop&crop=face",
-            }}
+            source={usuario?.fotoBase64 ? { uri: usuario.fotoBase64 } : undefined}
             style={styles.avatar}
           />
           <Text style={styles.sideLabel} numberOfLines={1} adjustsFontSizeToFit>
-            CATEGORIA: ORO
+            CATEGORIA: {usuario?.categoria?.toUpperCase() || "COMUN"}
           </Text>
         </TouchableOpacity>
 
@@ -98,7 +113,7 @@ const styles = StyleSheet.create({
   sideLabel: {
     color: C.gold,
     fontFamily: "serif",
-    fontSize: 24,
+    fontSize: 10,
     fontWeight: "800",
     textAlign: "center",
   },

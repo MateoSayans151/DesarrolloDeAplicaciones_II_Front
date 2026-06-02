@@ -1,12 +1,10 @@
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { ScreenLayout } from "@/components/ScreenLayout";
-import { C } from "@/styles/colors";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { API_BASE_URL } from "@/config";
-import { useEffect, useState } from "react";
-import { useRouter } from "expo-router";
 import usuarioService, { UsuarioResponse } from "@/models/services/usuarioService";
+import { C } from "@/styles/colors";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 const paymentMethods = [
   { id: 1, tipo: "Visa", ultimosNumeros: 1234, verificado: "si" },
@@ -102,11 +100,15 @@ export default function PerfilScreen() {
     <ScreenLayout activeTab="perfil">
       <View style={styles.userData}>
         <View style={styles.userRow}>
-          <Text style={styles.userLabel}>{usuario?.nombre}</Text>
+          <Text style={styles.userLabel}>Nombre</Text>
+          <Text style={styles.userValue}>{usuario?.nombre}</Text>
+        </View>
+        <View style={styles.userRow}>
+          <Text style={styles.userLabel}>Categoría</Text>
           <Text style={styles.userValue}>{usuario?.categoria}</Text>
         </View>
         <View style={styles.userRow}>
-          <Text style={styles.userLabel}>Correo</Text>
+          <Text style={styles.userLabel}>Documento</Text>
           <Text style={styles.userValue}>{usuario?.documento}</Text>
         </View>
       </View>
@@ -119,7 +121,7 @@ export default function PerfilScreen() {
         ))}
       </View>
 
-      <TouchableOpacity style={styles.primaryButton} activeOpacity={0.82}>
+      <TouchableOpacity style={[styles.primaryButton, { marginTop: 14 }]} activeOpacity={0.82}>
         <Text style={styles.primaryButtonText}>ANADIR NUEVO</Text>
       </TouchableOpacity>
 
@@ -189,7 +191,9 @@ const styles = StyleSheet.create({
     fontFamily: "serif",
     fontSize: 18,
     fontWeight: "900",
-    width: 86,
+    flexShrink: 0,
+    marginRight: 10,
+    minWidth: 100,
   },
   userValue: {
     color: C.gold,

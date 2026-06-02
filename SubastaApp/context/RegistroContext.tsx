@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, ReactNode } from "react";
-import { API_BASE_URL } from "../config";
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 
@@ -33,7 +32,10 @@ export interface RegistroData {
   // Paso 1
   nombre: string;
   apellido: string;
-  domicilio: string;
+  localidad: string;
+  calle: string;
+  numeroCalle: number;
+  codigoPostal: number;
   pais: string;
   documento: string;
   fotoDocumentoFrente: string | null; // base64
@@ -50,9 +52,6 @@ interface RegistroContextType {
   setPaso2: (password: string, medioPagos: MedioPago[]) => void;
   setMedioPago: (medioPago: MedioPago) => void;
   resetRegistro: () => void;
-  submitRegistro: (registroData?: RegistroData) => Promise<void>;
-  loading: boolean;
-  error: string | null;
 }
 
 // ─── Estado inicial ───────────────────────────────────────────────────────────
@@ -60,7 +59,10 @@ interface RegistroContextType {
 const initialData: RegistroData = {
   nombre: "",
   apellido: "",
-  domicilio: "",
+  localidad: "",
+  calle: "",
+  numeroCalle: 0,
+  codigoPostal: 0,
   pais: "",
   documento: "",
   fotoDocumentoFrente: null,
@@ -76,8 +78,6 @@ const RegistroContext = createContext<RegistroContextType | undefined>(undefined
 
 export function RegistroProvider({ children }: { children: ReactNode }) {
   const [data, setData] = useState<RegistroData>(initialData);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const setPaso1 = (campos: Partial<RegistroData>) => {
     setData((prev) => ({ ...prev, ...campos }));
@@ -93,54 +93,11 @@ export function RegistroProvider({ children }: { children: ReactNode }) {
 
   const resetRegistro = () => {
     setData(initialData);
-    setError(null);
-  };
-
-  const submitRegistro = async (registroData = data) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const body = {
-        documento: registroData.documento,
-        nombre: registroData.nombre,
-        apellido: registroData.apellido,
-        pais: registroData.pais,
-        domicilio: registroData.domicilio,
-        password: registroData.password,
-        fotoDocumentoFrente: registroData.fotoDocumentoFrente ?? "",
-        fotoDocumentoDorso: registroData.fotoDocumentoDorso ?? "",
-        fotoPerfil: registroData.fotoPerfil,
-        medioPagos: registroData.medioPagos,
-      };
-
-      const response = await fetch(`${API_BASE_URL}/usuarios/registro`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-
-      if (!response.ok) {
-        const text = await response.text();
-        try {
-          const json = JSON.parse(text);
-          throw new Error(json.mensaje ?? text);
-        } catch {
-          throw new Error(text || `Error ${response.status}`);
-        }
-      }
-
-      resetRegistro();
-    } catch (e: any) {
-      setError(e.message ?? "Error desconocido");
-      throw e;
-    } finally {
-      setLoading(false);
-    }
   };
 
   return (
     <RegistroContext.Provider
-      value={{ data, setPaso1, setPaso2, setMedioPago, resetRegistro, submitRegistro, loading, error }}
+      value={{ data, setPaso1, setPaso2, setMedioPago, resetRegistro }}
     >
       {children}
     </RegistroContext.Provider>
