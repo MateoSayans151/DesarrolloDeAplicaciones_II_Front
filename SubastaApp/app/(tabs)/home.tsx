@@ -1,4 +1,5 @@
 import { Image } from "expo-image";
+import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
   Animated,
@@ -14,6 +15,7 @@ import { C } from "@/styles/colors";
 // ─── Data ────────────────────────────────────────────────────────────────────
 
 const heroAuction = {
+  id: "1", // <-- ID real de tu subasta destacada
   title: "Ferrari 355 F1",
   image:
     "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600&h=300&fit=crop",
@@ -71,6 +73,7 @@ function formatTime(totalSeconds: number) {
 // ─── Components ──────────────────────────────────────────────────────────────
 
 function HeroBanner() {
+  const router = useRouter();
   const [seconds, setSeconds] = useState(heroAuction.initialSeconds);
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
@@ -111,7 +114,11 @@ function HeroBanner() {
           {formatTime(seconds)}
         </Animated.Text>
 
-        <TouchableOpacity style={styles.bidButton} activeOpacity={0.82}>
+        <TouchableOpacity
+          style={styles.bidButton}
+          activeOpacity={0.82}
+          onPress={() => router.push(`/SubastaElegida?id=${heroAuction.id}`)}
+        >
           <Text style={styles.bidButtonText}>PUJA AHORA</Text>
         </TouchableOpacity>
       </View>
@@ -127,10 +134,14 @@ function HeroBanner() {
 }
 
 function AuctionGridCard({ item }: { item: (typeof auctions)[number] }) {
-  const isArgCurrency = item.currency.includes("ARG");
+  const router = useRouter();
 
   return (
-    <TouchableOpacity style={styles.gridCard} activeOpacity={0.85}>
+    <TouchableOpacity
+      style={styles.gridCard}
+      activeOpacity={0.85}
+      onPress={() => router.push(`/SubastaElegida?id=${item.id}`)}
+    >
       {/* Currency badge */}
       <View style={styles.badgeRow}>
         <View style={styles.badge}>
