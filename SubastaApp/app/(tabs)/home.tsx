@@ -2,8 +2,8 @@ import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   Animated,
-  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -11,55 +11,7 @@ import {
 } from "react-native";
 import { ScreenLayout } from "@/components/ScreenLayout";
 import { C } from "@/styles/colors";
-
-// ─── Data ────────────────────────────────────────────────────────────────────
-
-const heroAuction = {
-  id: "1", // <-- ID real de tu subasta destacada
-  title: "Ferrari 355 F1",
-  image:
-    "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600&h=300&fit=crop",
-  initialSeconds: 118 * 60 + 22, // 01:58:22
-};
-
-const auctions = [
-  {
-    id: "1",
-    title: "Subasta cuadros de arte",
-    highestBid: "$550",
-    currency: "Live $USD",
-    timeLeft: "10:00",
-    image:
-      "https://images.unsplash.com/photo-1547826039-bfc35e0f1ea8?w=300&h=300&fit=crop",
-  },
-  {
-    id: "2",
-    title: "Subasta productos Sony",
-    highestBid: "$3.400.000",
-    currency: "Live $ARG",
-    timeLeft: "01:12",
-    image:
-      "https://images.unsplash.com/photo-1588508065123-287b28e013da?w=300&h=300&fit=crop",
-  },
-  {
-    id: "3",
-    title: "Subasta coleccion Lego",
-    highestBid: "$1.200",
-    currency: "Live $USD",
-    timeLeft: "25:00",
-    image:
-      "https://images.unsplash.com/photo-1587654780291-39c9404d746b?w=300&h=300&fit=crop",
-  },
-  {
-    id: "4",
-    title: "Subasta relojes Rolex",
-    highestBid: "$2.100.000",
-    currency: "Live $ARG",
-    timeLeft: "00:45",
-    image:
-      "https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=300&h=300&fit=crop",
-  },
-];
+import subastaService, { SubastaResponse } from "@/models/services/subastaService";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -70,11 +22,28 @@ function formatTime(totalSeconds: number) {
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
+const MAX_GRID = 5;
+
+function shuffleTake<T>(arr: T[], n: number): T[] {
+  return [...arr].sort(() => Math.random() - 0.5).slice(0, n);
+}
+
+const CATEGORIA_IMAGE: Record<SubastaResponse["categoria"], string> = {
+  comun:    "https://images.unsplash.com/photo-1547826039-bfc35e0f1ea8?w=300&h=300&fit=crop",
+  especial: "https://images.unsplash.com/photo-1588508065123-287b28e013da?w=300&h=300&fit=crop",
+  plata:    "https://images.unsplash.com/photo-1587654780291-39c9404d746b?w=300&h=300&fit=crop",
+  oro:      "https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=300&h=300&fit=crop",
+  platino:  "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600&h=300&fit=crop",
+};
+
+const HERO_FALLBACK_IMAGE =
+  "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600&h=300&fit=crop";
+
 // ─── Components ──────────────────────────────────────────────────────────────
 
-function HeroBanner() {
+function HeroBanner({ subasta }: { subasta: SubastaResponse }) {
   const router = useRouter();
-  const [seconds, setSeconds] = useState(heroAuction.initialSeconds);
+  const [seconds, setSeconds] = useState(0);
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
@@ -86,44 +55,32 @@ function HeroBanner() {
 
   useEffect(() => {
     Animated.sequence([
-      Animated.timing(pulseAnim, {
-        toValue: 1.04,
-        duration: 120,
-        useNativeDriver: true,
-      }),
-      Animated.timing(pulseAnim, {
-        toValue: 1,
-        duration: 120,
-        useNativeDriver: true,
-      }),
+      Animated.timing(pulseAnim, { toValue: 1.04, duration: 120, useNativeDriver: true }),
+      Animated.timing(pulseAnim, { toValue: 1,    duration: 120, useNativeDriver: true }),
     ]).start();
   }, [seconds]);
 
+  const image = CATEGORIA_IMAGE[subasta.categoria] ?? HERO_FALLBACK_IMAGE;
+
   return (
     <View style={styles.heroBanner}>
-      <Image source={{ uri: heroAuction.image }} style={styles.heroImage} />
-
-      {/* Dark gradient overlay */}
+      <Image source={{ uri: image }} style={styles.heroImage} />
       <View style={styles.heroOverlay} />
 
-      {/* Countdown */}
       <View style={styles.heroContent}>
-        <Animated.Text
-          style={[styles.countdown, { transform: [{ scale: pulseAnim }] }]}
-        >
+        <Text style={styles.heroCategoria}>{subasta.categoria.toUpperCase()}</Text>
+        <Animated.Text style={[styles.countdown, { transform: [{ scale: pulseAnim }] }]}>
           {formatTime(seconds)}
         </Animated.Text>
-
         <TouchableOpacity
           style={styles.bidButton}
           activeOpacity={0.82}
-          onPress={() => router.push(`/SubastaElegida?id=${heroAuction.id}`)}
+          onPress={() => router.push(`/SubastaElegida?id=${subasta.id}`)}
         >
           <Text style={styles.bidButtonText}>PUJA AHORA</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Pagination dots */}
       <View style={styles.dots}>
         <View style={[styles.dot, styles.dotActive]} />
         <View style={styles.dot} />
@@ -133,8 +90,9 @@ function HeroBanner() {
   );
 }
 
-function AuctionGridCard({ item }: { item: (typeof auctions)[number] }) {
+function AuctionGridCard({ item }: { item: SubastaResponse }) {
   const router = useRouter();
+  const image = CATEGORIA_IMAGE[item.categoria] ?? HERO_FALLBACK_IMAGE;
 
   return (
     <TouchableOpacity
@@ -142,26 +100,26 @@ function AuctionGridCard({ item }: { item: (typeof auctions)[number] }) {
       activeOpacity={0.85}
       onPress={() => router.push(`/SubastaElegida?id=${item.id}`)}
     >
-      {/* Currency badge */}
       <View style={styles.badgeRow}>
         <View style={styles.badge}>
           <View style={styles.badgeDot} />
-          <Text style={styles.badgeText}>{item.currency}</Text>
+          <Text style={styles.badgeText}>
+            {item.fecha} {item.hora}hs
+          </Text>
         </View>
       </View>
 
-      {/* Product image */}
-      <Image source={{ uri: item.image }} style={styles.gridImage} />
+      <Image source={{ uri: image }} style={styles.gridImage} />
 
-      {/* Bid info */}
       <View style={styles.gridBidRow}>
-        <Text style={styles.gridBid}>{item.highestBid}</Text>
-        <Text style={styles.gridTime}>{item.timeLeft}</Text>
+        <Text style={styles.gridCategoria}>{item.categoria.toUpperCase()}</Text>
+        {item.ubicacion ? (
+          <Text style={styles.gridTime} numberOfLines={1}>📍 {item.ubicacion}</Text>
+        ) : null}
       </View>
 
-      {/* Title */}
       <Text style={styles.gridTitle} numberOfLines={2}>
-        {item.title.toUpperCase()}
+        SUBASTA #{item.id}
       </Text>
     </TouchableOpacity>
   );
@@ -170,17 +128,40 @@ function AuctionGridCard({ item }: { item: (typeof auctions)[number] }) {
 // ─── Screen ──────────────────────────────────────────────────────────────────
 
 export default function HomeScreen() {
+  const [subastas, setSubastas] = useState<SubastaResponse[]>([]);
+  const [loading, setLoading]   = useState(true);
+  const [error, setError]       = useState<string | null>(null);
+
+  useEffect(() => {
+    subastaService
+      .listarAbiertas()
+      .then(setSubastas)
+      .catch((e) => setError(e.message ?? "Error al cargar subastas"))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const [hero, ...remaining] = subastas;
+  const rest = shuffleTake(remaining, MAX_GRID);
+
   return (
     <ScreenLayout activeTab="home">
-      <HeroBanner />
+      {loading ? (
+        <ActivityIndicator size="large" color={C.gold} style={{ marginTop: 40 }} />
+      ) : error ? (
+        <Text style={styles.errorText}>{error}</Text>
+      ) : (
+        <>
+          {hero && <HeroBanner subasta={hero} />}
 
-      <Text style={styles.sectionTitle}>SUBASTAS ABIERTAS</Text>
+          <Text style={styles.sectionTitle}>SUBASTAS ABIERTAS</Text>
 
-      <View style={styles.grid}>
-        {auctions.map((item) => (
-          <AuctionGridCard key={item.id} item={item} />
-        ))}
-      </View>
+          <View style={styles.grid}>
+            {rest.map((item) => (
+              <AuctionGridCard key={item.id} item={item} />
+            ))}
+          </View>
+        </>
+      )}
     </ScreenLayout>
   );
 }
@@ -220,6 +201,14 @@ const styles = StyleSheet.create({
     top: 0,
     justifyContent: "center",
     gap: 14,
+  },
+  heroCategoria: {
+    color: C.gold,
+    fontFamily: "serif",
+    fontSize: 13,
+    fontWeight: "700",
+    letterSpacing: 3,
+    opacity: 0.85,
   },
   countdown: {
     color: C.gold,
@@ -332,17 +321,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingTop: 6,
   },
-  gridBid: {
+  gridCategoria: {
     color: C.gold,
     fontFamily: "serif",
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "900",
   },
   gridTime: {
     color: "#9ab0c4",
     fontFamily: "serif",
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: "700",
+    maxWidth: "55%",
   },
   gridTitle: {
     color: "#e8d9bb",
@@ -353,5 +343,12 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
     paddingHorizontal: 8,
     paddingTop: 4,
+  },
+  errorText: {
+    color: "#f44336",
+    fontFamily: "serif",
+    fontSize: 15,
+    marginTop: 40,
+    textAlign: "center",
   },
 });

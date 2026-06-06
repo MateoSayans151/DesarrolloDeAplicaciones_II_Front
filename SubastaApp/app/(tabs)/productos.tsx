@@ -109,7 +109,11 @@ export default function ProductosScreen() {
 
       <View style={[styles.sectionHeader, styles.secondSection]}>
         <Text style={styles.sectionTitle}>MIS SUBASTAS</Text>
-        <TouchableOpacity style={styles.addButton} activeOpacity={0.8}>
+        <TouchableOpacity
+          style={styles.addButton}
+          activeOpacity={0.8}
+          onPress={() => router.push("/(tabs)/crear-subasta")}
+        >
           <MaterialIcons name="add" size={22} color="#111111" />
         </TouchableOpacity>
       </View>
