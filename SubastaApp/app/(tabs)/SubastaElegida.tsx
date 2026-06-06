@@ -17,6 +17,10 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import subastaService, { SubastaResponse } from "@/models/services/subastaService";
+import api from "@/models/services/api";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface Puja {
   id: number;
@@ -26,42 +30,20 @@ interface Puja {
   foto?: string;
 }
 
-interface Subasta {
-  id: number;
-  titulo: string;
-  descripcion: string;
+// Extiende SubastaResponse con los campos extra que devuelve GET /subastas/:id
+// Agregar los que el backend vaya sumando sin romper lo existente
+interface SubastaDetalle extends SubastaResponse {
+  titulo?: string;
+  descripcion?: string;
   imagenUrl?: string;
   imagenes?: string[];
-  lote: string | number;
-  ultimaPuja: number;
-  segundosRestantes: number;
-  pujas: Puja[];
+  lote?: string | number;
+  ultimaPuja?: number;
+  segundosRestantes?: number;
+  pujas?: Puja[];
 }
 
-const API_BASE = "http://TU_IP:8080/api/v1";
-
-const HARD_CODED_SUBASTA: Subasta = {
-  id: 1,
-  titulo: "Vintage Electronics Collection",
-  descripcion:
-    "Una colección exclusiva de electrónica vintage de los años 70 y 80. Piezas únicas en perfecto estado de conservación.",
-  imagenUrl:
-    "https://images.unsplash.com/photo-1547826039-bfc35e0f1ea8?w=800&h=400&fit=crop",
-  imagenes: [
-    "https://images.unsplash.com/photo-1547826039-bfc35e0f1ea8?w=800&h=400&fit=crop",
-    "https://images.unsplash.com/photo-1588508065123-287b28e013da?w=800&h=400&fit=crop",
-    "https://images.unsplash.com/photo-1587654780291-39c9404d746b?w=800&h=400&fit=crop",
-  ],
-  lote: "04",
-  ultimaPuja: 3400000,
-  segundosRestantes: 72,
-  pujas: [
-    { id: 1, nombrePostor: "Mateo", apellidoPostor: "Sayans", monto: 3400000 },
-    { id: 2, nombrePostor: "Facundo", apellidoPostor: "Conde", monto: 3345000 },
-    { id: 3, nombrePostor: "Tomás", apellidoPostor: "Lecuenis", monto: 3320000 },
-    { id: 4, nombrePostor: "Lucía", apellidoPostor: "Martínez", monto: 3290000 },
-  ],
-};
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const fmt = (n: number) =>
   "$" + n.toLocaleString("es-AR", { minimumFractionDigits: 0 });
@@ -76,41 +58,55 @@ const fmtTime = (s: number) => {
 const initials = (nombre: string, apellido: string) =>
   `${nombre[0] ?? ""}${apellido[0] ?? ""}`.toUpperCase();
 
+const CATEGORIA_IMAGE: Record<SubastaResponse["categoria"], string> = {
+  comun:    "https://images.unsplash.com/photo-1547826039-bfc35e0f1ea8?w=800&h=400&fit=crop",
+  especial: "https://images.unsplash.com/photo-1588508065123-287b28e013da?w=800&h=400&fit=crop",
+  plata:    "https://images.unsplash.com/photo-1587654780291-39c9404d746b?w=800&h=400&fit=crop",
+  oro:      "https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=800&h=400&fit=crop",
+  platino:  "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&h=400&fit=crop",
+};
+
+// ─── Screen ───────────────────────────────────────────────────────────────────
+
 export default function SubastaScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const insets = useSafeAreaInsets(); // ← toma el safe area real del dispositivo
+  const insets = useSafeAreaInsets();
 
-  const [subasta, setSubasta] = useState<Subasta | null>(null);
+  const [subasta, setSubasta] = useState<SubastaDetalle | null>(null);
   const [loading, setLoading] = useState(true);
   const [segundos, setSegundos] = useState(0);
   const [customBid, setCustomBid] = useState("");
   const [pujaLoading, setPujaLoading] = useState(false);
   const [imgIndex, setImgIndex] = useState(0);
 
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const pulseAnim = useRef(new Animated.Value(1)).current;
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(30)).current;
+  const timerRef   = useRef<ReturnType<typeof setInterval> | null>(null);
+  const pulseAnim  = useRef(new Animated.Value(1)).current;
+  const fadeAnim   = useRef(new Animated.Value(0)).current;
+  const slideAnim  = useRef(new Animated.Value(30)).current;
   const didAnimate = useRef(false);
 
   useEffect(() => {
-    fetchSubasta();
+    if (id) fetchSubasta();
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [id]);
 
   const fetchSubasta = async (isRefresh = false) => {
     try {
-      const data = HARD_CODED_SUBASTA;
+      // subastaService.obtener ya usa el endpoint GET /subastas/:id
+      const data = await subastaService.obtener(Number(id)) as SubastaDetalle;
       setSubasta(data);
+
       if (!isRefresh) {
-        setSegundos(data.segundosRestantes);
-        startTimer(data.segundosRestantes);
+        const secs = data.segundosRestantes ?? 0;
+        setSegundos(secs);
+        startTimer(secs);
       }
+
       if (!didAnimate.current) {
         didAnimate.current = true;
         Animated.parallel([
-          Animated.timing(fadeAnim, { toValue: 1, duration: 500, useNativeDriver: true }),
+          Animated.timing(fadeAnim,  { toValue: 1, duration: 500, useNativeDriver: true }),
           Animated.spring(slideAnim, { toValue: 0, tension: 60, friction: 10, useNativeDriver: true }),
         ]).start();
       }
@@ -130,7 +126,7 @@ export default function SubastaScreen() {
       setSegundos(s);
       Animated.sequence([
         Animated.timing(pulseAnim, { toValue: 1.08, duration: 100, useNativeDriver: true }),
-        Animated.timing(pulseAnim, { toValue: 1, duration: 100, useNativeDriver: true }),
+        Animated.timing(pulseAnim, { toValue: 1,    duration: 100, useNativeDriver: true }),
       ]).start();
     }, 1000);
   };
@@ -140,9 +136,12 @@ export default function SubastaScreen() {
     setPujaLoading(true);
     try {
       const token = await AsyncStorage.getItem("token");
-      const res = await fetch(`${API_BASE}/pujas`, {
+      const res = await fetch(`${api.defaults.baseURL}/pujas`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({ subastaId: subasta.id, monto }),
       });
       if (!res.ok) {
@@ -167,6 +166,8 @@ export default function SubastaScreen() {
     handlePuja(monto);
   };
 
+  // ── Loading / Error ──────────────────────────────────────────────────────────
+
   if (loading) {
     return (
       <View style={[styles.center, { paddingTop: insets.top }]}>
@@ -185,19 +186,26 @@ export default function SubastaScreen() {
     );
   }
 
-  const imagenes = subasta.imagenes?.length
-    ? subasta.imagenes
-    : subasta.imagenUrl ? [subasta.imagenUrl] : [];
-  const ultimaPuja = subasta.ultimaPuja ?? 0;
-  const topPujas = [...(subasta.pujas ?? [])].sort((a, b) => b.monto - a.monto).slice(0, 5);
-  const isUrgent = segundos < 60;
+  // ── Derived data (con fallbacks para campos que el backend aún no expone) ────
 
-  // altura del header = safe area top + contenido del header
-  const HEADER_HEIGHT = insets.top + 52;
+  const imagenFallback = CATEGORIA_IMAGE[subasta.categoria];
+  const imagenes       = subasta.imagenes?.length
+    ? subasta.imagenes
+    : subasta.imagenUrl
+      ? [subasta.imagenUrl]
+      : [imagenFallback];
+
+  const ultimaPuja  = subasta.ultimaPuja ?? 0;
+  const topPujas    = [...(subasta.pujas ?? [])].sort((a, b) => b.monto - a.monto).slice(0, 5);
+  const isUrgent    = segundos > 0 && segundos < 60;
+
+  // Título: usa campo "titulo" si existe, si no arma uno con categoria + id
+  const titulo = subasta.titulo
+    ?? `Subasta ${subasta.categoria.toUpperCase()} #${subasta.id}`;
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: "#050f1e" }}
+      style={{ flex: 1, backgroundColor: "#0d2235" }}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <ScrollView
@@ -207,37 +215,38 @@ export default function SubastaScreen() {
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
       >
-        {/* Hero — altura dinámica según safe area */}
-        <View style={[styles.heroContainer, { height: 260 + insets.top }]}>
+        {/* ── Hero ─────────────────────────────────────────────────────────── */}
+        <View style={[styles.heroContainer, { height: 300 + insets.top }]}>
           {imagenes.length > 0 ? (
-            <Image source={{ uri: imagenes[imgIndex] }} style={styles.heroImage} resizeMode="cover" />
+            <Image
+              source={{ uri: imagenes[imgIndex] }}
+              style={styles.heroImage}
+              resizeMode="cover"
+            />
           ) : (
             <View style={[styles.heroImage, styles.noImage]}>
               <MaterialIcons name="image-not-supported" size={48} color="#2a3f5a" />
             </View>
           )}
 
-          {/* overlay degradado manual */}
           <View style={styles.heroOverlayTop} />
           <View style={styles.heroOverlayBottom} />
 
-          {/* header flotante con paddingTop dinámico */}
+          {/* Header flotante */}
           <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
             <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
               <MaterialIcons name="arrow-back-ios" size={20} color="#e5e2c6" />
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>SUBASTA APP</Text>
-            <TouchableOpacity style={styles.favBtn}>
-              <MaterialIcons name="star-border" size={22} color="#d4af37" />
-            </TouchableOpacity>
           </View>
 
-          {/* lote badge */}
-          <View style={styles.loteBadge}>
-            <Text style={styles.loteText}>LOTE {subasta.lote}</Text>
-          </View>
+          {/* Lote badge */}
+          {subasta.lote != null && (
+            <View style={styles.loteBadge}>
+              <Text style={styles.loteText}>LOTE {subasta.lote}</Text>
+            </View>
+          )}
 
-          {/* miniaturas */}
+          {/* Miniaturas */}
           {imagenes.length > 1 && (
             <View style={styles.thumbRow}>
               {imagenes.map((img, i) => (
@@ -255,19 +264,40 @@ export default function SubastaScreen() {
 
         <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
 
-          {/* Título */}
+          {/* ── Título + metadata ──────────────────────────────────────────── */}
           <View style={styles.titleSection}>
-            <Text style={styles.titulo}>{subasta.titulo.toUpperCase()}</Text>
-            <TouchableOpacity style={styles.infoBadge}>
-              <Text style={styles.infoBadgeText}>+ INFO</Text>
-            </TouchableOpacity>
+            <Text style={styles.titulo}>{titulo.toUpperCase()}</Text>
+
+            {/* Metadata: fecha, hora, ubicacion, categoria, estado */}
+            <View style={styles.metaRow}>
+              <View style={styles.metaBadge}>
+                <MaterialIcons name="event" size={12} color="#d4af37" />
+                <Text style={styles.metaText}>{subasta.fecha} · {subasta.hora}hs</Text>
+              </View>
+              <View style={styles.metaBadge}>
+                <MaterialIcons name="label" size={12} color="#d4af37" />
+                <Text style={styles.metaText}>{subasta.categoria.toUpperCase()}</Text>
+              </View>
+              {subasta.ubicacion && (
+                <View style={styles.metaBadge}>
+                  <MaterialIcons name="place" size={12} color="#d4af37" />
+                  <Text style={styles.metaText}>{subasta.ubicacion}</Text>
+                </View>
+              )}
+              {subasta.capacidadAsistentes != null && (
+                <View style={styles.metaBadge}>
+                  <MaterialIcons name="people" size={12} color="#d4af37" />
+                  <Text style={styles.metaText}>{subasta.capacidadAsistentes} asistentes</Text>
+                </View>
+              )}
+            </View>
           </View>
 
-          {/* Live Bid Feed */}
+          {/* ── Live Bid Feed ──────────────────────────────────────────────── */}
           <View style={styles.card}>
             <View style={styles.cardHeader}>
               <View style={styles.liveDot} />
-              <Text style={styles.cardTitle}>LIVE BID FEED</Text>
+              <Text style={styles.cardTitle}>POSTORES</Text>
             </View>
             {topPujas.length === 0 ? (
               <Text style={styles.sinPujas}>Aún no hay pujas.</Text>
@@ -296,34 +326,34 @@ export default function SubastaScreen() {
             )}
           </View>
 
-          {/* Stats */}
+          {/* ── Stats ─────────────────────────────────────────────────────── */}
           <View style={styles.statsRow}>
             <View style={styles.statBox}>
               <Text style={styles.statLabel}>ÚLTIMA PUJA</Text>
-              <Text style={styles.statValue}>{fmt(ultimaPuja)}</Text>
+              <Text style={styles.statValue}>
+                {ultimaPuja > 0 ? fmt(ultimaPuja) : "—"}
+              </Text>
             </View>
             <View style={styles.timerWrap}>
-              <Animated.View style={[styles.timerCircle, isUrgent && styles.timerCircleUrgent, { transform: [{ scale: pulseAnim }] }]}>
+              <Animated.View style={[
+                styles.timerCircle,
+                isUrgent && styles.timerCircleUrgent,
+                { transform: [{ scale: pulseAnim }] },
+              ]}>
                 <MaterialIcons name="timer" size={14} color={isUrgent ? "#ff6b6b" : "#d4af37"} />
               </Animated.View>
             </View>
             <View style={[styles.statBox, { alignItems: "flex-end" }]}>
               <Text style={styles.statLabel}>TIEMPO RESTANTE</Text>
-              <Text style={[styles.statValue, isUrgent && styles.statValueUrgent]}>{fmtTime(segundos)}</Text>
+              <Text style={[styles.statValue, isUrgent && styles.statValueUrgent]}>
+                {segundos > 0 ? fmtTime(segundos) : "—"}
+              </Text>
             </View>
           </View>
 
-          {/* Bid Now */}
+          {/* ── Bid Now ───────────────────────────────────────────────────── */}
           <View style={styles.bidCard}>
-            <Text style={styles.bidTitle}>BID NOW</Text>
-            <View style={styles.bidButtons}>
-              <TouchableOpacity style={styles.bidBtn} onPress={() => handlePuja(ultimaPuja + 50000)} disabled={pujaLoading}>
-                <Text style={styles.bidBtnText}>+$50.000</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.bidBtn} onPress={() => handlePuja(ultimaPuja + 100000)} disabled={pujaLoading}>
-                <Text style={styles.bidBtnText}>+$100.000</Text>
-              </TouchableOpacity>
-            </View>
+            <Text style={styles.bidTitle}>SUBASTAR</Text>
             <View style={styles.customBidWrapper}>
               <View style={styles.customBidRow}>
                 <TextInput
@@ -352,17 +382,21 @@ export default function SubastaScreen() {
             </View>
           </View>
 
-          {/* Descripción */}
-          <View style={styles.descCard}>
-            <Text style={styles.descTitle}>DESCRIPCIÓN</Text>
-            <Text style={styles.descripcion}>{subasta.descripcion}</Text>
-          </View>
+          {/* ── Descripción ───────────────────────────────────────────────── */}
+          {subasta.descripcion && (
+            <View style={styles.descCard}>
+              <Text style={styles.descTitle}>DESCRIPCIÓN</Text>
+              <Text style={styles.descripcion}>{subasta.descripcion}</Text>
+            </View>
+          )}
 
         </Animated.View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
+
+// ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
   scroll: { flex: 1, backgroundColor: "#050f1e" },
@@ -371,7 +405,6 @@ const styles = StyleSheet.create({
 
   heroContainer: { position: "relative" },
   heroImage: { width: "100%", height: "100%" },
-  // overlays manuales top y bottom para simular gradiente
   heroOverlayTop: {
     position: "absolute", top: 0, left: 0, right: 0, height: 100,
     backgroundColor: "rgba(5,15,30,0.6)",
@@ -385,9 +418,7 @@ const styles = StyleSheet.create({
   header: {
     position: "absolute", top: 0, left: 0, right: 0,
     flexDirection: "row", alignItems: "center", justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-    // paddingTop se aplica inline con insets.top + 12
+    paddingHorizontal: 16, paddingBottom: 12,
   },
   backBtn: { width: 36, height: 36, justifyContent: "center" },
   headerTitle: { color: "#e5e2c6", fontWeight: "900", fontSize: 15, letterSpacing: 3 },
@@ -410,18 +441,24 @@ const styles = StyleSheet.create({
     flexDirection: "row", paddingHorizontal: 16, paddingBottom: 10, gap: 8,
     backgroundColor: "rgba(5,15,30,0.6)",
   },
-  thumbWrap: { width: 52, height: 36, borderRadius: 6, overflow: "hidden", borderWidth: 1.5, borderColor: "rgba(255,255,255,0.15)" },
+  thumbWrap: {
+    width: 52, height: 36, borderRadius: 6, overflow: "hidden",
+    borderWidth: 1.5, borderColor: "rgba(255,255,255,0.15)",
+  },
   thumbWrapActive: { borderColor: "#d4af37" },
   thumb: { width: "100%", height: "100%" },
 
   titleSection: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 4 },
   titulo: { color: "#e5e2c6", fontSize: 22, fontWeight: "900", letterSpacing: 1, lineHeight: 28, marginBottom: 10 },
-  infoBadge: {
-    alignSelf: "flex-start", backgroundColor: "rgba(212,175,55,0.1)",
-    borderRadius: 20, paddingHorizontal: 14, paddingVertical: 5,
-    borderWidth: 1, borderColor: "rgba(212,175,55,0.25)",
+
+  metaRow: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginBottom: 4 },
+  metaBadge: {
+    flexDirection: "row", alignItems: "center", gap: 4,
+    backgroundColor: "rgba(212,175,55,0.08)",
+    borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4,
+    borderWidth: 1, borderColor: "rgba(212,175,55,0.2)",
   },
-  infoBadgeText: { color: "#d4af37", fontSize: 12, fontWeight: "700", letterSpacing: 1 },
+  metaText: { color: "#d4af37", fontSize: 11, fontWeight: "700", letterSpacing: 0.5 },
 
   card: {
     marginHorizontal: 16, marginTop: 16,
@@ -487,7 +524,6 @@ const styles = StyleSheet.create({
     flex: 1, backgroundColor: "#d4af37",
     borderRadius: 25, paddingVertical: 12,
     alignItems: "center", justifyContent: "center",
-    flexDirection: "row", gap: 4,
   },
   bidBtnText: { color: "#050f1e", fontWeight: "900", fontSize: 12, letterSpacing: 0.5 },
 
