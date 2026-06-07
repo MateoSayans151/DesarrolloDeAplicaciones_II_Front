@@ -1,179 +1,124 @@
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { Image } from "expo-image";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
+import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { ScreenLayout } from "@/components/ScreenLayout";
 import { C } from "@/styles/colors";
+import usuarioService, { MiPujaResponse } from "@/models/services/usuarioService";
 
-const bids = [
-  {
-    id: "1",
-    title: "Ferrari 250 GTO (h. 1962)",
-    currentBid: "$150,000 USD",
-    timeLeft: "1d 3h",
-    image:
-      "https://images.unsplash.com/photo-1542362567-b07e54358753?w=120&h=120&fit=crop",
-  },
-  {
-    id: "2",
-    title: "Rolex Daytona (v. 1970)",
-    currentBid: "$10,000 USD",
-    timeLeft: "2d 1h",
-    image:
-      "https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=120&h=120&fit=crop",
-  },
-  {
-    id: "3",
-    title: "Apple iPhone 2G",
-    currentBid: "$2,000 USD",
-    timeLeft: "2d 2h",
-    image:
-      "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=120&h=120&fit=crop",
-  },
-  {
-    id: "4",
-    title: "Sable Star Wars",
-    currentBid: "$5,000 USD",
-    timeLeft: "2d 6h",
-    image:
-      "https://images.unsplash.com/photo-1535016120720-40c646be5580?w=120&h=120&fit=crop",
-  },
-];
+function BidCard({ item }: { item: MiPujaResponse }) {
+  const router = useRouter();
+  const superada = !item.esMejorPuja;
 
-function BidCard({ item }: { item: (typeof bids)[number] }) {
   return (
-    <View style={styles.bidCard}>
-      <View style={styles.imageColumn}>
-        <Image source={{ uri: item.image }} style={styles.bidImage} />
-        <TouchableOpacity style={styles.infoButton} activeOpacity={0.82}>
-          <Text style={styles.infoText}>+ Info</Text>
-        </TouchableOpacity>
-      </View>
+    <View style={[styles.bidCard, superada && styles.bidCardSuperada]}>
+      {superada && (
+        <View style={styles.superadaBadge}>
+          <MaterialIcons name="trending-down" size={12} color="#fff" />
+          <Text style={styles.superadaText}>SUPERADA</Text>
+        </View>
+      )}
 
       <View style={styles.bidInfo}>
-        <Text style={styles.bidTitle} numberOfLines={1}>
-          {item.title}
+        <Text style={styles.bidTitle} numberOfLines={2}>
+          {item.productoDescripcion}
         </Text>
-        <Text style={styles.bidLabel}>Puja mayor actual:</Text>
-        <Text style={styles.bidAmount}>{item.currentBid}</Text>
-        <Text style={styles.timeLeft}>Tiempo restante: {item.timeLeft}</Text>
+        <Text style={styles.bidLabel}>
+          Tu puja: <Text style={styles.bidAmount}>${item.importe.toLocaleString("es-AR")}</Text>
+        </Text>
+        <Text style={styles.bidLabel}>
+          Mejor puja: <Text style={[styles.bidAmount, superada && styles.bidAmountSuperada]}>${item.mejorImporte.toLocaleString("es-AR")}</Text>
+        </Text>
+        <Text style={styles.subastaMeta}>
+          Subasta #{item.subastaId} · {item.subastaFecha} · {item.subastaEstado.toUpperCase()}
+        </Text>
       </View>
 
-      <TouchableOpacity style={styles.bidAction} activeOpacity={0.75}>
-        <MaterialIcons name="gavel" size={30} color={C.gold} />
+      <TouchableOpacity
+        style={[styles.bidAction, superada && styles.bidActionSuperada]}
+        activeOpacity={0.75}
+        onPress={() => router.push(`/(tabs)/SubastaElegida?id=${item.subastaId}` as any)}
+      >
+        <MaterialIcons name="gavel" size={28} color={superada ? "#e74c3c" : C.gold} />
       </TouchableOpacity>
     </View>
   );
 }
 
 export default function PujasScreen() {
+  const [pujas, setPujas] = useState<MiPujaResponse[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const cargar = async () => {
+      try {
+        const usuario = await usuarioService.getUsuarioLocal();
+        if (!usuario) return;
+        const data = await usuarioService.listarMisPujas(usuario.id);
+        setPujas(data);
+      } catch {
+        // silencioso
+      } finally {
+        setLoading(false);
+      }
+    };
+    cargar();
+  }, []);
+
   return (
     <ScreenLayout activeTab="pujas">
       <Text style={styles.sectionTitle}>MIS PUJAS</Text>
 
-      <View style={styles.bids}>
-        {bids.map((item) => (
-          <BidCard key={item.id} item={item} />
-        ))}
-      </View>
+      {loading ? (
+        <ActivityIndicator color={C.gold} style={{ marginVertical: 20 }} />
+      ) : pujas.length === 0 ? (
+        <Text style={styles.emptyText}>No realizaste ninguna puja todavía.</Text>
+      ) : (
+        <View style={styles.bids}>
+          {pujas.map((item) => (
+            <BidCard key={item.pujaId} item={item} />
+          ))}
+        </View>
+      )}
     </ScreenLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  sectionTitle: {
-    color: C.gold,
-    fontFamily: "serif",
-    fontSize: 20,
-    fontWeight: "900",
-    marginBottom: 10,
-    marginLeft: 10,
-    textAlign: "left",
-  },
-  bids: {
-    gap: 10,
-  },
+  sectionTitle: { color: C.gold, fontFamily: "serif", fontSize: 20, fontWeight: "900", marginBottom: 10, marginLeft: 10 },
+  emptyText: { color: "#4a6a80", fontFamily: "serif", fontSize: 14, textAlign: "center", paddingVertical: 20 },
+  bids: { gap: 10 },
   bidCard: {
-    alignItems: "center",
     backgroundColor: C.card,
     borderColor: C.blueLine,
     borderRadius: 15,
     borderWidth: 1,
     flexDirection: "row",
-    minHeight: 86,
-    paddingBottom: 6,
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    overflow: "hidden",
+  },
+  bidCardSuperada: { borderColor: "rgba(231,76,60,0.4)" },
+  superadaBadge: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    backgroundColor: "#e74c3c",
+    borderBottomLeftRadius: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 3,
     paddingHorizontal: 8,
-    paddingTop: 6,
+    paddingVertical: 3,
   },
-  imageColumn: {
-    alignItems: "center",
-    marginRight: 8,
-    width: 58,
-  },
-  bidImage: {
-    backgroundColor: "#f7f7f7",
-    borderColor: "#d7d7d7",
-    borderRadius: 8,
-    borderWidth: 1,
-    height: 54,
-    width: 54,
-  },
-  infoButton: {
-    alignItems: "center",
-    backgroundColor: C.brightGold,
-    borderColor: "#8d7435",
-    borderRadius: 12,
-    borderWidth: 1,
-    height: 22,
-    justifyContent: "center",
-    marginTop: 3,
-    width: 58,
-  },
-  infoText: {
-    color: "#111111",
-    fontFamily: "serif",
-    fontSize: 14,
-    fontWeight: "900",
-  },
-  bidInfo: {
-    flex: 1,
-    justifyContent: "center",
-    minWidth: 0,
-  },
-  bidTitle: {
-    color: C.gold,
-    fontFamily: "serif",
-    fontSize: 16,
-    fontWeight: "900",
-    lineHeight: 19,
-  },
-  bidLabel: {
-    color: C.gold,
-    fontFamily: "serif",
-    fontSize: 12,
-    lineHeight: 16,
-  },
-  bidAmount: {
-    color: C.brightGold,
-    fontFamily: "serif",
-    fontSize: 15,
-    fontWeight: "900",
-    lineHeight: 18,
-  },
-  timeLeft: {
-    color: C.gold,
-    fontFamily: "serif",
-    fontSize: 15,
-    fontWeight: "900",
-    lineHeight: 18,
-  },
-  bidAction: {
-    alignItems: "center",
-    borderColor: C.green,
-    borderRadius: 24,
-    borderWidth: 1,
-    height: 48,
-    justifyContent: "center",
-    marginLeft: 8,
-    width: 48,
-  },
+  superadaText: { color: "#fff", fontFamily: "serif", fontSize: 9, fontWeight: "900", letterSpacing: 1 },
+  bidInfo: { flex: 1, paddingRight: 8 },
+  bidTitle: { color: C.gold, fontFamily: "serif", fontSize: 15, fontWeight: "900", lineHeight: 19, marginBottom: 4 },
+  bidLabel: { color: C.muted, fontFamily: "serif", fontSize: 12, lineHeight: 17 },
+  bidAmount: { color: C.brightGold, fontWeight: "900" },
+  bidAmountSuperada: { color: "#e74c3c" },
+  subastaMeta: { color: "#4a6a80", fontFamily: "serif", fontSize: 11, marginTop: 4 },
+  bidAction: { alignItems: "center", borderColor: C.green, borderRadius: 24, borderWidth: 1, height: 48, justifyContent: "center", width: 48, flexShrink: 0 },
+  bidActionSuperada: { borderColor: "#e74c3c" },
 });

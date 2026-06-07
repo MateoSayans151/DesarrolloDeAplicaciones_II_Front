@@ -1,9 +1,10 @@
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { ScrollView, StatusBar, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { BottomNav, TabId } from "@/components/BottomNav";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { C } from "@/styles/colors";
+import usuarioService from "@/models/services/usuarioService";
 
 type Props = {
   children: ReactNode;
@@ -12,6 +13,14 @@ type Props = {
 };
 
 export function ScreenLayout({ children, activeTab, paddingBottom = 92 }: Props) {
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    usuarioService.getUsuarioLocal().then((u) => {
+      setIsAdmin(u?.role === "ADMIN");
+    });
+  }, []);
+
   return (
     <SafeAreaView style={{ backgroundColor: C.screen, flex: 1 }}>
       <StatusBar barStyle="light-content" backgroundColor={C.screen} />
@@ -23,7 +32,7 @@ export function ScreenLayout({ children, activeTab, paddingBottom = 92 }: Props)
           <ScreenHeader />
           {children}
         </ScrollView>
-        <BottomNav activeTab={activeTab} />
+        <BottomNav activeTab={activeTab} isAdmin={isAdmin} />
       </View>
     </SafeAreaView>
   );

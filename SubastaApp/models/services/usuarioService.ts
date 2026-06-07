@@ -47,6 +47,7 @@ export interface UsuarioResponse {
   fotoBase64?: string;
   verificado: "si" | "no";
   categoria?: "comun" | "especial" | "plata" | "oro" | "platino";
+  role?: "USER" | "ADMIN";
   mediosPago?: PaymentMethod[];
 }
 
@@ -60,6 +61,37 @@ export interface PaymentMethod {
 export interface TokenResponse {
   token: string;
   tipo: string;
+}
+
+export interface EstadisticasUsuarioResponse {
+  usuarioId: number;
+  categoria: string;
+  subastasCreadas: number;
+  productosSubidos: number;
+  productosVendidos: number;
+  pujasGanadas: number;
+  montoTotalGastado: number;
+}
+
+export interface NotificacionResponse {
+  id: number;
+  titulo: string;
+  mensaje: string;
+  categoriaDestino: string;
+  fechaCreacion: string;
+}
+
+export interface MiPujaResponse {
+  pujaId: number;
+  importe: number;
+  mejorImporte: number;
+  esMejorPuja: boolean;
+  itemId: number;
+  precioBase: number;
+  productoDescripcion: string;
+  subastaId: number;
+  subastaFecha: string;
+  subastaEstado: "abierta" | "cerrada";
 }
 
 const usuarioService = {
@@ -92,10 +124,15 @@ const usuarioService = {
 
   async actualizarPerfil(data: {
     nombre?: string;
-    direccion?: string;
+    domicilio?: string;
     fotoBase64?: string;
   }): Promise<UsuarioResponse> {
-    const res = await api.put<UsuarioResponse>("/usuarios/me", data);
+    const res = await api.patch<UsuarioResponse>("/usuarios/me", data);
+    return res.data;
+  },
+
+  async agregarMedioPago(req: Record<string, unknown>): Promise<PaymentMethod> {
+    const res = await api.post<PaymentMethod>("/usuarios/me/medios-pago", req);
     return res.data;
   },
 
@@ -122,6 +159,21 @@ const usuarioService = {
   async obtenerTokenRegistroDev(documento: string): Promise<TokenResponse> {
     const res = await api.get<TokenResponse>(`/usuarios/dev/token-registro/${documento}`);
     await AsyncStorage.setItem("token", res.data.token);
+    return res.data;
+  },
+
+  async obtenerEstadisticas(id: number): Promise<EstadisticasUsuarioResponse> {
+    const res = await api.get<EstadisticasUsuarioResponse>(`/usuarios/${id}/estadisticas`);
+    return res.data;
+  },
+
+  async obtenerNotificaciones(): Promise<NotificacionResponse[]> {
+    const res = await api.get<NotificacionResponse[]>("/notificaciones/me");
+    return res.data;
+  },
+
+  async listarMisPujas(usuarioId: number): Promise<MiPujaResponse[]> {
+    const res = await api.get<MiPujaResponse[]>(`/usuarios/${usuarioId}/pujas`);
     return res.data;
   },
 };

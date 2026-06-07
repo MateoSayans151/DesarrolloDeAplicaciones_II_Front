@@ -29,9 +29,13 @@ export default function HomeScreen() {
 
     setLoading(true);
     try {
-      const data = await usuarioService.login({ documento, password });
-      await AsyncStorage.setItem("tipo", data.tipo);
-      router.replace("/home");
+      await usuarioService.login({ documento, password });
+      const perfil = await usuarioService.obtenerPerfil();
+      if (perfil.role === "ADMIN") {
+        router.replace("/admin-subastas" as any);
+      } else {
+        router.replace("/home");
+      }
     } catch (error: any) {
       Alert.alert("Error", error?.response?.data?.mensaje || "No se pudo conectar con el servidor.");
     } finally {

@@ -1,10 +1,8 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useRouter } from "expo-router";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Animated,
   KeyboardAvoidingView,
   Platform,
@@ -95,36 +93,37 @@ export default function CrearSubastaScreen() {
   const [capacidad,  setCapacidad]  = useState("");
   const [categoria,  setCategoria]  = useState<SubastaRequest["categoria"]>("comun");
   const [loading,    setLoading]    = useState(false);
+  const [error,      setError]      = useState<string | null>(null);
+  const [exito,      setExito]      = useState<string | null>(null);
 
-  // Fade in al montar
-  useRef(
-    Animated.timing(fadeAnim, { toValue: 1, duration: 500, useNativeDriver: true }).start()
-  );
+  useEffect(() => {
+    Animated.timing(fadeAnim, { toValue: 1, duration: 500, useNativeDriver: true }).start();
+  }, []);
 
   const handleCrear = async () => {
-    // Validación básica
+    setError(null);
+    setExito(null);
+
     if (!fecha.trim() || !hora.trim()) {
-      Alert.alert("Campos requeridos", "La fecha y la hora son obligatorias.");
+      setError("La fecha y la hora son obligatorias.");
       return;
     }
 
-    // Formato fecha YYYY-MM-DD
     const fechaRegex = /^\d{4}-\d{2}-\d{2}$/;
     if (!fechaRegex.test(fecha.trim())) {
-      Alert.alert("Formato inválido", "La fecha debe tener el formato YYYY-MM-DD.");
+      setError("La fecha debe tener el formato YYYY-MM-DD (ej: 2026-12-31).");
       return;
     }
 
-    // Formato hora HH:MM:SS
     const horaRegex = /^\d{2}:\d{2}(:\d{2})?$/;
     if (!horaRegex.test(hora.trim())) {
-      Alert.alert("Formato inválido", "La hora debe tener el formato HH:MM o HH:MM:SS.");
+      setError("La hora debe tener el formato HH:MM o HH:MM:SS (ej: 18:00).");
       return;
     }
 
     setLoading(true);
     try {
-      const payload: SubastaRequest = {
+      const payload = {
         fecha:    fecha.trim(),
         hora:     hora.trim().length === 5 ? `${hora.trim()}:00` : hora.trim(),
         categoria,
@@ -132,15 +131,15 @@ export default function CrearSubastaScreen() {
         ...(capacidad.trim()  && { capacidadAsistentes: parseInt(capacidad, 10) }),
       };
 
-      const nuevaSubasta = await subastaService.crear(payload);
+      console.log("[CrearSubasta] enviando payload:", JSON.stringify(payload));
+      const nuevaSubasta = await subastaService.crear(payload as SubastaRequest);
+      console.log("[CrearSubasta] subasta creada:", nuevaSubasta.id);
 
-      Alert.alert(
-        "✓ Subasta creada",
-        `Subasta #${nuevaSubasta.id} creada exitosamente.`,
-        [{ text: "Ver subastas", onPress: () => router.back() }]
-      );
+      setExito(`Subasta #${nuevaSubasta.id} creada. Volvé a la lista para verla.`);
     } catch (e: any) {
-      Alert.alert("Error", e.message || "No se pudo crear la subasta.");
+      const msg = e?.message || "No se pudo crear la subasta.";
+      console.error("[CrearSubasta] error:", msg);
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -296,6 +295,20 @@ export default function CrearSubastaScreen() {
               </Text>
             </View>
           </View>
+
+          {/* ── Feedback ────────────────────────────────────────────── */}
+          {error ? (
+            <View style={styles.feedbackRow}>
+              <MaterialIcons name="error-outline" size={16} color="#e74c3c" />
+              <Text style={styles.feedbackError}>{error}</Text>
+            </View>
+          ) : null}
+          {exito ? (
+            <View style={[styles.feedbackRow, { backgroundColor: "rgba(46,204,113,0.12)", borderColor: "#2ecc71" }]}>
+              <MaterialIcons name="check-circle" size={16} color="#2ecc71" />
+              <Text style={[styles.feedbackError, { color: "#2ecc71" }]}>{exito}</Text>
+            </View>
+          ) : null}
 
           {/* ── Botón crear ─────────────────────────────────────────── */}
           <TouchableOpacity
@@ -504,6 +517,24 @@ const styles = StyleSheet.create({
   },
   crearBtnDisabled: {
     opacity: 0.5,
+  },
+  feedbackRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 8,
+    backgroundColor: "rgba(231,76,60,0.10)",
+    borderColor: "#e74c3c",
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 16,
+  },
+  feedbackError: {
+    color: "#e74c3c",
+    fontFamily: "serif",
+    fontSize: 13,
+    flex: 1,
+    lineHeight: 18,
   },
   crearBtnText: {
     color: BG,

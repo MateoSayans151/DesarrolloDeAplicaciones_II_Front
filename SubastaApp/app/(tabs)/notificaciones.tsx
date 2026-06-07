@@ -7,33 +7,10 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { C } from "@/styles/colors";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-
-const notifications = [
-  {
-    id: "1",
-    title: "Productos Sony",
-    body: "Marco Sayan acaba de pujar $3.400.000.",
-    time: "10:12",
-    unread: true,
-  },
-  {
-    id: "2",
-    title: "Productos Sony",
-    body: "Facundo Conde acaba de pujar $3.345.000.",
-    time: "20:05",
-    unread: true,
-  },
-  {
-    id: "3",
-    title: "Productos Sony",
-    body: "Tomás Lacamis acaba de pujar $3.211.000.",
-    time: "19:47",
-    unread: false,
-  },
-];
+import usuarioService, { NotificacionResponse } from "@/models/services/usuarioService";
 
 const GOLD     = "#d4af37";
 const GOLD_MID = "rgba(212,175,55,0.25)";
@@ -46,6 +23,15 @@ interface Props {
 export function NotificationsPanel({ visible, onClose }: Props) {
   const slideAnim   = useRef(new Animated.Value(-320)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
+  const [notificaciones, setNotificaciones] = useState<NotificacionResponse[]>([]);
+
+  useEffect(() => {
+    if (visible) {
+      usuarioService.obtenerNotificaciones()
+        .then(setNotificaciones)
+        .catch(() => {});
+    }
+  }, [visible]);
 
   useEffect(() => {
     if (visible) {
@@ -107,30 +93,30 @@ export function NotificationsPanel({ visible, onClose }: Props) {
 
               {/* ── Lista ──────────────────────────────────────────── */}
               <View style={styles.list}>
-                {notifications.map((n, i) => (
-                  <View key={n.id} style={[styles.row, !n.unread && styles.rowRead]}>
-                    {/* Indicador unread */}
-                    <View style={styles.unreadCol}>
-                      {n.unread && <View style={styles.unreadDot} />}
-                    </View>
-
-                    {/* Contenido */}
-                    <View style={styles.rowContent}>
-                      <View style={styles.rowTopRow}>
-                        <Text style={[styles.rowTitle, !n.unread && styles.rowTitleRead]}>
-                          {n.title}
-                        </Text>
-                        <Text style={styles.rowTime}>{n.time}</Text>
+                {notificaciones.length === 0 ? (
+                  <Text style={styles.emptyText}>Sin notificaciones</Text>
+                ) : (
+                  notificaciones.map((n) => {
+                    const hora = new Date(n.fechaCreacion).toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
+                    return (
+                      <View key={n.id} style={styles.row}>
+                        <View style={styles.unreadCol}>
+                          <View style={styles.unreadDot} />
+                        </View>
+                        <View style={styles.rowContent}>
+                          <View style={styles.rowTopRow}>
+                            <Text style={styles.rowTitle}>{n.titulo}</Text>
+                            <Text style={styles.rowTime}>{hora}</Text>
+                          </View>
+                          <Text style={styles.rowBody}>{n.mensaje}</Text>
+                        </View>
+                        <TouchableOpacity style={styles.actionBtn} activeOpacity={0.8}>
+                          <MaterialIcons name="arrow-forward-ios" size={12} color={GOLD} />
+                        </TouchableOpacity>
                       </View>
-                      <Text style={styles.rowBody}>{n.body}</Text>
-                    </View>
-
-                    {/* Acción */}
-                    <TouchableOpacity style={styles.actionBtn} activeOpacity={0.8}>
-                      <MaterialIcons name="arrow-forward-ios" size={12} color={GOLD} />
-                    </TouchableOpacity>
-                  </View>
-                ))}
+                    );
+                  })
+                )}
               </View>
 
               {/* ── Footer ─────────────────────────────────────────── */}
@@ -238,6 +224,13 @@ const styles = StyleSheet.create({
   list: {
     paddingHorizontal: 12,
     gap: 6,
+  },
+  emptyText: {
+    color: "#4a6a80",
+    fontFamily: "serif",
+    fontSize: 13,
+    textAlign: "center",
+    paddingVertical: 16,
   },
   row: {
     flexDirection: "row",

@@ -1,6 +1,7 @@
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useFocusEffect } from "expo-router";
 import {
   ActivityIndicator,
   Animated,
@@ -20,12 +21,6 @@ function formatTime(totalSeconds: number) {
   const m = Math.floor((totalSeconds % 3600) / 60);
   const s = totalSeconds % 60;
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
-}
-
-const MAX_GRID = 5;
-
-function shuffleTake<T>(arr: T[], n: number): T[] {
-  return [...arr].sort(() => Math.random() - 0.5).slice(0, n);
 }
 
 const CATEGORIA_IMAGE: Record<SubastaResponse["categoria"], string> = {
@@ -132,7 +127,9 @@ export default function HomeScreen() {
   const [loading, setLoading]   = useState(true);
   const [error, setError]       = useState<string | null>(null);
 
-  useEffect(() => {
+  const cargar = useCallback(() => {
+    setLoading(true);
+    setError(null);
     subastaService
       .listarAbiertas()
       .then(setSubastas)
@@ -140,8 +137,9 @@ export default function HomeScreen() {
       .finally(() => setLoading(false));
   }, []);
 
-  const [hero, ...remaining] = subastas;
-  const rest = shuffleTake(remaining, MAX_GRID);
+  useFocusEffect(cargar);
+
+  const [hero] = subastas;
 
   return (
     <ScreenLayout activeTab="home">
@@ -156,7 +154,7 @@ export default function HomeScreen() {
           <Text style={styles.sectionTitle}>SUBASTAS ABIERTAS</Text>
 
           <View style={styles.grid}>
-            {rest.map((item) => (
+            {subastas.map((item) => (
               <AuctionGridCard key={item.id} item={item} />
             ))}
           </View>
