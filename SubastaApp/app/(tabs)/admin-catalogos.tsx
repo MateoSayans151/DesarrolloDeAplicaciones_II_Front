@@ -109,7 +109,11 @@ export default function AdminCatalogosScreen() {
     }
   }, [params.subastaId]);
 
-  useFocusEffect(cargarSubastas);
+  useFocusEffect(
+    useCallback(() => {
+      cargarSubastas();
+    }, [cargarSubastas])
+  );
 
   // ── Cargar detalle del catálogo al seleccionar subasta ────────────────────
 

@@ -89,7 +89,11 @@ export default function AdminProductosScreen() {
     }
   }, []);
 
-  useFocusEffect(cargar);
+  useFocusEffect(
+    useCallback(() => {
+      cargar();
+    }, [cargar])
+  );
 
   return (
     <ScreenLayout activeTab="admin-productos" paddingBottom={110}>
