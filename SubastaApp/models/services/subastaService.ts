@@ -4,23 +4,25 @@ export interface SubastaResponse {
   id: number;
   fecha: string;
   hora: string;
-  estado: "abierta" | "cerrada";
+  estado: "abierta" | "cerrada" | "programada";
   creadorUsuarioId: number;
   categoria: "comun" | "especial" | "plata" | "oro" | "platino";
   ubicacion?: string;
   capacidadAsistentes?: number;
+  itemActivoId?: number | null;
+  tiempoItemSegundos?: number | null;
 }
 
 export interface SubastaRequest {
   fecha: string;
   hora: string;
-  estado?: "abierta" | "cerrada";
-  creadorUsuarioId: number;
+  creadorUsuarioId?: number;
   ubicacion?: string;
   capacidadAsistentes?: number;
   tieneDeposito?: "si" | "no";
   seguridadPropia?: "si" | "no";
   categoria: "comun" | "especial" | "plata" | "oro" | "platino";
+  tiempoItemSegundos?: number;
 }
 
 export interface AsistenteResponse {

@@ -12,7 +12,8 @@ function SubastaCard({ item, onRefresh }: { item: SubastaResponse; onRefresh: ()
   const [deleting, setDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const abierta = item.estado === "abierta";
+  const abierta   = item.estado === "abierta";
+  const programada = item.estado === "programada";
 
   const toggleEstado = async () => {
     setLoading(true);
@@ -52,10 +53,12 @@ function SubastaCard({ item, onRefresh }: { item: SubastaResponse; onRefresh: ()
           <Text style={s.cardMeta}>{item.fecha} · {item.hora}hs · {item.categoria.toUpperCase()}</Text>
           {item.ubicacion ? <Text style={s.cardMeta}>{item.ubicacion}</Text> : null}
         </View>
-        <View style={[s.estadoBadge, { backgroundColor: abierta ? "rgba(76,223,138,0.15)" : "rgba(90,90,90,0.15)" }]}>
-          <View style={[s.estadoDot, { backgroundColor: abierta ? "#4cdf8a" : "#666" }]} />
-          <Text style={[s.estadoText, { color: abierta ? "#4cdf8a" : "#666" }]}>
-            {abierta ? "ABIERTA" : "CERRADA"}
+        <View style={[s.estadoBadge, {
+          backgroundColor: abierta ? "rgba(76,223,138,0.15)" : programada ? "rgba(212,175,55,0.12)" : "rgba(90,90,90,0.15)",
+        }]}>
+          <View style={[s.estadoDot, { backgroundColor: abierta ? "#4cdf8a" : programada ? "#d4af37" : "#666" }]} />
+          <Text style={[s.estadoText, { color: abierta ? "#4cdf8a" : programada ? "#d4af37" : "#666" }]}>
+            {abierta ? "ABIERTA" : programada ? "PROGRAMADA" : "CERRADA"}
           </Text>
         </View>
       </View>

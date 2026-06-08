@@ -113,7 +113,8 @@ const usuarioService = {
 
   async obtenerPerfil(): Promise<UsuarioResponse> {
     const res = await api.get<UsuarioResponse>("/usuarios/me");
-    await AsyncStorage.setItem("usuario", JSON.stringify(res.data));
+    const { fotoDocumentoFrente, fotoDocumentoDorso, ...perfilReducido } = res.data as any;
+    await AsyncStorage.setItem("usuario", JSON.stringify(perfilReducido));
     return res.data;
   },
 
@@ -174,6 +175,18 @@ const usuarioService = {
 
   async listarMisPujas(usuarioId: number): Promise<MiPujaResponse[]> {
     const res = await api.get<MiPujaResponse[]>(`/usuarios/${usuarioId}/pujas`);
+    return res.data;
+  },
+
+  async listarPendientes(): Promise<UsuarioResponse[]> {
+    const res = await api.get<UsuarioResponse[]>("/usuarios/admin/pendientes");
+    return res.data;
+  },
+
+  async verificarUsuario(id: number, aprobar: boolean): Promise<{ token?: string }> {
+    const res = await api.post<{ token?: string }>(`/usuarios/admin/${id}/verificacion`, {
+      verificado: aprobar ? "si" : "no",
+    });
     return res.data;
   },
 };

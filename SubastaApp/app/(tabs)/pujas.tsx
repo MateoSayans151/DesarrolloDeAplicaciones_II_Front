@@ -1,6 +1,6 @@
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useRouter, useFocusEffect } from "expo-router";
+import { useCallback, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { ScreenLayout } from "@/components/ScreenLayout";
 import { C } from "@/styles/colors";
@@ -49,21 +49,23 @@ export default function PujasScreen() {
   const [pujas, setPujas] = useState<MiPujaResponse[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const cargar = async () => {
-      try {
-        const usuario = await usuarioService.getUsuarioLocal();
-        if (!usuario) return;
-        const data = await usuarioService.listarMisPujas(usuario.id);
-        setPujas(data);
-      } catch {
-        // silencioso
-      } finally {
-        setLoading(false);
-      }
-    };
-    cargar();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      setLoading(true);
+      (async () => {
+        try {
+          const usuario = await usuarioService.getUsuarioLocal();
+          if (!usuario) return;
+          const data = await usuarioService.listarMisPujas(usuario.id);
+          setPujas(data);
+        } catch {
+          // silencioso
+        } finally {
+          setLoading(false);
+        }
+      })();
+    }, [])
+  );
 
   return (
     <ScreenLayout activeTab="pujas">

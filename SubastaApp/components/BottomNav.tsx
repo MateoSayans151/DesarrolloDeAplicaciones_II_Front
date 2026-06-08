@@ -12,10 +12,11 @@ const USER_TABS = [
 ] as const;
 
 const ADMIN_TABS = [
-  { id: "admin-subastas",  label: "SUBASTAS",  icon: "gavel",         badge: null, route: "/admin-subastas"  },
-  { id: "admin-productos", label: "PRODUCTOS", icon: "inventory",     badge: null, route: "/admin-productos" },
-  { id: "admin-catalogos", label: "CATÁLOGOS", icon: "list-alt",      badge: null, route: "/admin-catalogos" },
-  { id: "perfil",          label: "PERFIL",    icon: "person-outline", badge: null, route: "/perfil"         },
+  { id: "admin-subastas",  label: "SUBASTAS",  icon: "gavel",          badge: null, route: "/admin-subastas"  },
+  { id: "admin-productos", label: "PRODUCTOS", icon: "inventory",      badge: null, route: "/admin-productos" },
+  { id: "admin-catalogos", label: "CATÁLOGOS", icon: "list-alt",       badge: null, route: "/admin-catalogos" },
+  { id: "admin-usuarios",  label: "USUARIOS",  icon: "how-to-reg",     badge: null, route: "/admin-usuarios"  },
+  { id: "perfil",          label: "PERFIL",    icon: "person-outline", badge: null, route: "/perfil"          },
 ] as const;
 
 export type TabId =

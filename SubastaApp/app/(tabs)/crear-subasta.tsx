@@ -91,6 +91,7 @@ export default function CrearSubastaScreen() {
   const [hora,       setHora]       = useState("");
   const [ubicacion,  setUbicacion]  = useState("");
   const [capacidad,  setCapacidad]  = useState("");
+  const [tiempoItem, setTiempoItem] = useState("60");
   const [categoria,  setCategoria]  = useState<SubastaRequest["categoria"]>("comun");
   const [loading,    setLoading]    = useState(false);
   const [error,      setError]      = useState<string | null>(null);
@@ -129,6 +130,7 @@ export default function CrearSubastaScreen() {
         categoria,
         ...(ubicacion.trim()  && { ubicacion: ubicacion.trim() }),
         ...(capacidad.trim()  && { capacidadAsistentes: parseInt(capacidad, 10) }),
+        tiempoItemSegundos: parseInt(tiempoItem, 10) || 60,
       };
 
       console.log("[CrearSubasta] enviando payload:", JSON.stringify(payload));
@@ -236,6 +238,20 @@ export default function CrearSubastaScreen() {
               />
             </Field>
 
+            <View style={styles.divider} />
+
+            {/* Tiempo por ítem */}
+            <Field label="SEGUNDOS POR ÍTEM" icon="timer">
+              <TextInput
+                style={styles.input}
+                placeholder="ej: 60"
+                placeholderTextColor={MUTED}
+                value={tiempoItem}
+                onChangeText={(v) => setTiempoItem(v.replace(/\D/g, ""))}
+                keyboardType="numeric"
+              />
+            </Field>
+
           </View>
 
           {/* ── Categoría ───────────────────────────────────────────── */}
@@ -287,12 +303,17 @@ export default function CrearSubastaScreen() {
               <Text style={styles.summaryLabel}>Capacidad</Text>
               <Text style={styles.summaryValue}>{capacidad || "—"}</Text>
             </View>
-            <View style={[styles.summaryRow, { borderBottomWidth: 0 }]}>
+            <View style={styles.summaryRow}>
               <MaterialIcons name="diamond" size={13} color={MUTED} />
               <Text style={styles.summaryLabel}>Categoría</Text>
               <Text style={[styles.summaryValue, { color: GOLD }]}>
                 {CATEGORIA_LABEL[categoria].toUpperCase()}
               </Text>
+            </View>
+            <View style={[styles.summaryRow, { borderBottomWidth: 0 }]}>
+              <MaterialIcons name="timer" size={13} color={MUTED} />
+              <Text style={styles.summaryLabel}>Seg. por ítem</Text>
+              <Text style={styles.summaryValue}>{tiempoItem || "60"}</Text>
             </View>
           </View>
 

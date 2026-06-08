@@ -5,7 +5,6 @@ import { useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   ActivityIndicator,
-  Alert,
   StyleSheet,
   Text,
   TextInput,
@@ -20,24 +19,30 @@ export default function HomeScreen() {
   const [documento, setDocumento] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const handleLogin = async () => {
+    setErrorMsg(null);
     if (!documento.trim() || !password.trim()) {
-      Alert.alert("Error", "Por favor completá todos los campos.");
+      setErrorMsg("Por favor completá todos los campos.");
       return;
     }
 
     setLoading(true);
     try {
+      console.log("[LOGIN] iniciando con documento:", documento);
       await usuarioService.login({ documento, password });
+      console.log("[LOGIN] token guardado, obteniendo perfil...");
       const perfil = await usuarioService.obtenerPerfil();
+      console.log("[LOGIN] perfil:", JSON.stringify(perfil));
       if (perfil.role === "ADMIN") {
         router.replace("/admin-subastas" as any);
       } else {
         router.replace("/home");
       }
     } catch (error: any) {
-      Alert.alert("Error", error?.response?.data?.mensaje || "No se pudo conectar con el servidor.");
+      console.log("[LOGIN] error:", error?.message);
+      setErrorMsg(error?.message || "No se pudo conectar con el servidor.");
     } finally {
       setLoading(false);
     }
@@ -86,6 +91,11 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </View>
         </View>
+        {errorMsg ? (
+          <Text style={{ color: "#ff6b6b", textAlign: "center", marginBottom: 12 }}>
+            {errorMsg}
+          </Text>
+        ) : null}
         <Text style={styles.registerText}>
           No tienes una cuenta, registrate{" "}
           <Link href="/registro-postor" asChild>
