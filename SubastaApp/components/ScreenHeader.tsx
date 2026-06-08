@@ -3,21 +3,27 @@ import { C } from "@/styles/colors";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert, Animated, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { NotificationsPanel } from "../app/(tabs)/notificaciones";
 import { XPLevelRing } from "./XPLevelRing";
 
-type Props = {
-  notificationCount?: number;
-};
-
-export function ScreenHeader({ notificationCount = 3 }: Props) {
+export function ScreenHeader() {
   const router = useRouter();
   const [showNotifs, setShowNotifs] = useState(false);
   const [usuario, setUsuario] = useState<UsuarioResponse | null>(null);
+  const [notificationCount, setNotificationCount] = useState(0);
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const glowAnim  = useRef(new Animated.Value(0.4)).current;
+
+  const refreshNotificationCount = useCallback(async () => {
+    try {
+      const notificaciones = await usuarioService.obtenerNotificaciones();
+      setNotificationCount(notificaciones.length);
+    } catch {
+      setNotificationCount(0);
+    }
+  }, []);
 
   useEffect(() => {
     const cargarUsuario = async () => {
@@ -29,7 +35,8 @@ export function ScreenHeader({ notificationCount = 3 }: Props) {
       }
     };
     cargarUsuario();
-  }, []);
+    refreshNotificationCount();
+  }, [refreshNotificationCount]);
 
   // Pulso sutil en la campana si hay notificaciones
   useEffect(() => {
@@ -49,7 +56,7 @@ export function ScreenHeader({ notificationCount = 3 }: Props) {
     loop.start();
     glow.start();
     return () => { loop.stop(); glow.stop(); };
-  }, [notificationCount]);
+  }, [notificationCount, pulseAnim, glowAnim]);
 
   const categoria = usuario?.categoria?.toUpperCase() ?? "COMÚN";
 
@@ -144,7 +151,10 @@ export function ScreenHeader({ notificationCount = 3 }: Props) {
 
       <NotificationsPanel
         visible={showNotifs}
-        onClose={() => setShowNotifs(false)}
+        onClose={() => {
+          setShowNotifs(false);
+          refreshNotificationCount();
+        }}
       />
     </>
   );
