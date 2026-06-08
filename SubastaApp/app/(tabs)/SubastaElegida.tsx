@@ -343,6 +343,7 @@ export default function SubastaElegidaScreen() {
       setSubasta(sub);
 
       if (sub.itemActivoId !== itemActivoIdRef.current) {
+        // cambió el item activo: resetear todo
         itemActivoIdRef.current = sub.itemActivoId;
         setCountdown(calcCountdown(sub));
 
@@ -354,6 +355,10 @@ export default function SubastaElegidaScreen() {
           wsCancelRef.current?.();
           setPujasActivas([]);
         }
+      } else if (sub.itemActivoId) {
+        // mismo item: re-fetchear pujas como fallback al WebSocket
+        const nuevasPujas = await pujaService.historial(sub.itemActivoId);
+        setPujasActivas(nuevasPujas.sort((a, b) => b.importe - a.importe));
       }
     } catch {
       // error silencioso en polling
@@ -404,8 +409,8 @@ export default function SubastaElegidaScreen() {
 
     cargar();
 
-    // polling cada 10s para detectar cambio de item activo
-    pollingRef.current = setInterval(refetchSubasta, 10_000);
+    // polling cada 3s: fallback si WS falla + detectar cambio de item activo
+    pollingRef.current = setInterval(refetchSubasta, 3_000);
 
     return () => {
       wsCancelRef.current?.();

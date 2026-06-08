@@ -29,13 +29,16 @@ const pujaService = {
   // Retorna una función de cleanup que desconecta el WebSocket.
   suscribir(itemId: number, onPuja: (puja: PujaResponse) => void): () => void {
     let client: Client | null = null;
+    let cancelled = false;
 
     AsyncStorage.getItem("token").then((token) => {
+      if (cancelled) return;
       client = new Client({
         brokerURL: WS_URL,
         connectHeaders: token ? { Authorization: `Bearer ${token}` } : {},
         reconnectDelay: 5000,
         onConnect: () => {
+          console.log(`[WS] Conectado. Suscribiendo a /topic/items/${itemId}`);
           client?.subscribe(`/topic/items/${itemId}`, (message) => {
             try {
               const puja: PujaResponse = JSON.parse(message.body);
@@ -45,11 +48,21 @@ const pujaService = {
             }
           });
         },
+        onStompError: (frame) => {
+          console.warn("[WS] STOMP error:", frame.headers["message"]);
+        },
+        onWebSocketError: (evt) => {
+          console.warn("[WS] WebSocket error:", evt);
+        },
+        onDisconnect: () => {
+          console.log("[WS] Desconectado");
+        },
       });
       client.activate();
     });
 
     return () => {
+      cancelled = true;
       client?.deactivate();
     };
   },
