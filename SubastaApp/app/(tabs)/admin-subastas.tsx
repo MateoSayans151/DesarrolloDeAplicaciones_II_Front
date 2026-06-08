@@ -130,7 +130,11 @@ export default function AdminSubastasScreen() {
   }, []);
 
   // Recarga cada vez que la pantalla vuelve al foco (ej: al volver de crear-subasta)
-  useFocusEffect(cargar);
+  useFocusEffect(
+    useCallback(() => {
+      cargar();
+    }, [cargar])
+  );
 
   return (
     <ScreenLayout activeTab="admin-subastas">
