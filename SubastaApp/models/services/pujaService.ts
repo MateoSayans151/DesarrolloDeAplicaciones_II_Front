@@ -12,7 +12,7 @@ export interface PujaResponse {
 }
 
 const host = Constants.expoConfig?.hostUri?.split(":").shift() ?? "localhost";
-const WS_URL = `ws://${host}:8080/api/v1/ws-subastas/websocket`;
+const WS_URL = `ws://${host}:8080/api/v1/ws-subastas`;
 
 const pujaService = {
   async pujar(itemId: number, data: { asistente: number; importe: number }): Promise<PujaResponse> {

@@ -28,6 +28,13 @@ const GREEN = "#4cdf8a";
 const RED   = "#e74c3c";
 const TIMER_INICIAL = 60;
 
+function calcCountdown(sub: { tiempoItemSegundos?: number | null; itemActivoDesde?: number | null }): number {
+  const total = sub.tiempoItemSegundos ?? TIMER_INICIAL;
+  if (!sub.itemActivoDesde) return total;
+  const elapsed = Math.floor((Date.now() - sub.itemActivoDesde) / 1000);
+  return Math.max(1, total - elapsed);
+}
+
 const CATEGORIA_IMAGE: Record<SubastaResponse["categoria"], string> = {
   comun:    "https://images.unsplash.com/photo-1547826039-bfc35e0f1ea8?w=800&h=400&fit=crop",
   especial: "https://images.unsplash.com/photo-1588508065123-287b28e013da?w=800&h=400&fit=crop",
@@ -337,7 +344,7 @@ export default function SubastaElegidaScreen() {
 
       if (sub.itemActivoId !== itemActivoIdRef.current) {
         itemActivoIdRef.current = sub.itemActivoId;
-        setCountdown(sub.tiempoItemSegundos ?? TIMER_INICIAL);
+        setCountdown(calcCountdown(sub));
 
         if (sub.itemActivoId) {
           suscribirItem(sub.itemActivoId);
@@ -366,6 +373,7 @@ export default function SubastaElegidaScreen() {
           usuarioService.getUsuarioLocal(),
         ]);
         setSubasta(sub);
+        setCountdown(calcCountdown(sub));
         itemActivoIdRef.current = sub.itemActivoId;
 
         const asistentes = await subastaService.listarAsistentes(Number(id));
@@ -416,7 +424,6 @@ export default function SubastaElegidaScreen() {
     timerRef.current = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
-          // cuando llega a 0 forzar refetch inmediato
           refetchSubasta();
           return subasta.tiempoItemSegundos ?? TIMER_INICIAL;
         }

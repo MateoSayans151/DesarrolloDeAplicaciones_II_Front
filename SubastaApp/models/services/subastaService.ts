@@ -10,6 +10,7 @@ export interface SubastaResponse {
   ubicacion?: string;
   capacidadAsistentes?: number;
   itemActivoId?: number | null;
+  itemActivoDesde?: number | null;
   tiempoItemSegundos?: number | null;
 }
 
