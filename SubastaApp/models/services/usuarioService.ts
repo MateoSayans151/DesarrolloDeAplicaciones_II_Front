@@ -1,4 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as FileSystem from "expo-file-system";
 import api from "./api";
 
 export interface UsuarioRegistroRequest {
@@ -26,13 +27,13 @@ export interface RegistroInicialRequest {
   codigoPostal: number;
   fotoDocumentoFrente: string;
   fotoDocumentoDorso: string;
+  categoria: string;
 }
 
 export interface RegistroFinalRequest {
   password: string;
   medioPagos: any[];
 }
-
 
 export interface LoginRequest {
   documento: string;
@@ -113,7 +114,8 @@ const usuarioService = {
 
   async obtenerPerfil(): Promise<UsuarioResponse> {
     const res = await api.get<UsuarioResponse>("/usuarios/me");
-    const { fotoDocumentoFrente, fotoDocumentoDorso, ...perfilReducido } = res.data as any;
+    const { fotoDocumentoFrente, fotoDocumentoDorso, ...perfilReducido } =
+      res.data as any;
     await AsyncStorage.setItem("usuario", JSON.stringify(perfilReducido));
     return res.data;
   },
@@ -123,13 +125,10 @@ const usuarioService = {
     return res.data;
   },
 
-  async actualizarPerfil(data: {
-    nombre?: string;
-    domicilio?: string;
-    fotoBase64?: string;
-  }): Promise<UsuarioResponse> {
-    const res = await api.patch<UsuarioResponse>("/usuarios/me", data);
-    return res.data;
+  async actualizarFotoPerfil(base64: string): Promise<void> {
+    await api.patch("/usuarios/me", {
+      fotoBase64: `data:image/jpeg;base64,${base64}`,
+    });
   },
 
   async agregarMedioPago(req: Record<string, unknown>): Promise<PaymentMethod> {
@@ -147,24 +146,36 @@ const usuarioService = {
     return !!token;
   },
 
-  async registroInicial(data: RegistroInicialRequest): Promise<UsuarioResponse> {
-    const res = await api.post<UsuarioResponse>("/usuarios/registro-inicial", data);
+  async registroInicial(
+    data: RegistroInicialRequest,
+  ): Promise<UsuarioResponse> {
+    const res = await api.post<UsuarioResponse>(
+      "/usuarios/registro-inicial",
+      data,
+    );
     return res.data;
   },
 
   async registroFinal(data: RegistroFinalRequest): Promise<UsuarioResponse> {
-    const res = await api.post<UsuarioResponse>("/usuarios/registro-final", data);
+    const res = await api.post<UsuarioResponse>(
+      "/usuarios/registro-final",
+      data,
+    );
     return res.data;
   },
 
   async obtenerTokenRegistroDev(documento: string): Promise<TokenResponse> {
-    const res = await api.get<TokenResponse>(`/usuarios/dev/token-registro/${documento}`);
+    const res = await api.get<TokenResponse>(
+      `/usuarios/dev/token-registro/${documento}`,
+    );
     await AsyncStorage.setItem("token", res.data.token);
     return res.data;
   },
 
   async obtenerEstadisticas(id: number): Promise<EstadisticasUsuarioResponse> {
-    const res = await api.get<EstadisticasUsuarioResponse>(`/usuarios/${id}/estadisticas`);
+    const res = await api.get<EstadisticasUsuarioResponse>(
+      `/usuarios/${id}/estadisticas`,
+    );
     return res.data;
   },
 
@@ -183,10 +194,17 @@ const usuarioService = {
     return res.data;
   },
 
-  async verificarUsuario(id: number, aprobar: boolean): Promise<{ token?: string }> {
-    const res = await api.post<{ token?: string }>(`/usuarios/admin/${id}/verificacion`, {
-      verificado: aprobar ? "si" : "no",
-    });
+  async verificarUsuario(
+    id: number,
+    aprobar: boolean,
+  ): Promise<{ token?: string }> {
+    const res = await api.post<{ token?: string }>(
+      `/usuarios/admin/${id}/verificacion`,
+      {
+        verificado: aprobar ? "si" : "no",
+        ...(aprobar && { categoria: "comun" }),
+      },
+    );
     return res.data;
   },
 };
