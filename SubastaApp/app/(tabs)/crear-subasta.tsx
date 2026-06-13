@@ -1,10 +1,12 @@
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Animated,
   KeyboardAvoidingView,
+  Modal,
   Platform,
   ScrollView,
   StyleSheet,
@@ -46,6 +48,188 @@ const CATEGORIA_ICON: Record<SubastaRequest["categoria"], string> = {
   platino: "diamond",
 };
 
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+function pad(n: number) {
+  return String(n).padStart(2, "0");
+}
+
+function dateToString(d: Date): string {
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+function timeToString(d: Date): string {
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}:00`;
+}
+
+// ─── DatePicker button ───────────────────────────────────────────────────────
+
+function PickerButton({
+  icon,
+  label,
+  value,
+  placeholder,
+  onPress,
+}: {
+  icon: string;
+  label: string;
+  value: string;
+  placeholder: string;
+  onPress: () => void;
+}) {
+  const hasValue = value.length > 0;
+  return (
+    <View style={fieldStyles.wrap}>
+      <View style={fieldStyles.labelRow}>
+        <MaterialIcons name={icon as any} size={13} color={GOLD} style={{ opacity: 0.8 }} />
+        <Text style={fieldStyles.label}>{label}</Text>
+      </View>
+      <TouchableOpacity style={pickerStyles.btn} onPress={onPress} activeOpacity={0.8}>
+        <Text style={[pickerStyles.value, !hasValue && pickerStyles.placeholder]}>
+          {hasValue ? value : placeholder}
+        </Text>
+        <MaterialIcons name="edit-calendar" size={16} color={GOLD} style={{ opacity: 0.7 }} />
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+const pickerStyles = StyleSheet.create({
+  btn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "rgba(255,255,255,0.03)",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: BORDER,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  value: {
+    color: "#e8d9bb",
+    fontFamily: "serif",
+    fontSize: 14,
+  },
+  placeholder: {
+    color: MUTED,
+  },
+});
+
+// ─── iOS modal picker wrapper ────────────────────────────────────────────────
+
+function IOSPickerModal({
+  visible,
+  mode,
+  date,
+  minimumDate,
+  onConfirm,
+  onCancel,
+}: {
+  visible: boolean;
+  mode: "date" | "time";
+  date: Date;
+  minimumDate?: Date;
+  onConfirm: (d: Date) => void;
+  onCancel: () => void;
+}) {
+  const [tempDate, setTempDate] = useState(date);
+
+  useEffect(() => {
+    if (visible) setTempDate(date);
+  }, [visible]);
+
+  const handleChange = (_: DateTimePickerEvent, selected?: Date) => {
+    if (selected) setTempDate(selected);
+  };
+
+  return (
+    <Modal visible={visible} transparent animationType="slide">
+      <View style={modalStyles.overlay}>
+        <View style={modalStyles.sheet}>
+          {/* Toolbar */}
+          <View style={modalStyles.toolbar}>
+            <TouchableOpacity onPress={onCancel} style={modalStyles.toolbarBtn}>
+              <Text style={modalStyles.toolbarCancel}>Cancelar</Text>
+            </TouchableOpacity>
+            <Text style={modalStyles.toolbarTitle}>
+              {mode === "date" ? "Seleccioná la fecha" : "Seleccioná la hora"}
+            </Text>
+            <TouchableOpacity onPress={() => onConfirm(tempDate)} style={modalStyles.toolbarBtn}>
+              <Text style={modalStyles.toolbarConfirm}>Confirmar</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Native picker */}
+          <DateTimePicker
+            value={tempDate}
+            mode={mode}
+            display="spinner"
+            onChange={handleChange}
+            minimumDate={minimumDate}
+            locale="es-AR"
+            style={modalStyles.picker}
+            textColor="#e8d9bb"
+            themeVariant="dark"
+          />
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+const modalStyles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(0,0,0,0.6)",
+  },
+  sheet: {
+    backgroundColor: "#0b1a2e",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    borderTopWidth: 1,
+    borderColor: BORDER,
+    paddingBottom: 32,
+  },
+  toolbar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: BORDER,
+  },
+  toolbarBtn: {
+    minWidth: 80,
+  },
+  toolbarTitle: {
+    color: MUTED,
+    fontFamily: "serif",
+    fontSize: 12,
+    fontWeight: "700",
+    letterSpacing: 1.5,
+    textTransform: "uppercase",
+  },
+  toolbarCancel: {
+    color: MUTED,
+    fontFamily: "serif",
+    fontSize: 14,
+  },
+  toolbarConfirm: {
+    color: GOLD,
+    fontFamily: "serif",
+    fontSize: 14,
+    fontWeight: "700",
+    textAlign: "right",
+  },
+  picker: {
+    backgroundColor: "transparent",
+    marginTop: 8,
+  },
+});
+
 // ─── Field component ─────────────────────────────────────────────────────────
 
 function Field({
@@ -83,12 +267,25 @@ const fieldStyles = StyleSheet.create({
 // ─── Screen ──────────────────────────────────────────────────────────────────
 
 export default function CrearSubastaScreen() {
-  const router  = useRouter();
-  const insets  = useSafeAreaInsets();
+  const router   = useRouter();
+  const insets   = useSafeAreaInsets();
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
-  const [fecha,      setFecha]      = useState("");
-  const [hora,       setHora]       = useState("");
+  // ── Date / time state ──────────────────────────────────────────────
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedTime, setSelectedTime] = useState<Date | null>(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+
+  // Android inline pickers need a temp state
+  const [androidPickerMode, setAndroidPickerMode] = useState<"date" | "time">("date");
+  const [showAndroidPicker, setShowAndroidPicker] = useState(false);
+
+  // Derived strings for API
+  const fecha = selectedDate ? dateToString(selectedDate) : "";
+  const hora  = selectedTime ? timeToString(selectedTime) : "";
+
+  // ── Other fields ──────────────────────────────────────────────────
   const [ubicacion,  setUbicacion]  = useState("");
   const [capacidad,  setCapacidad]  = useState("");
   const [tiempoItem, setTiempoItem] = useState("60");
@@ -101,32 +298,34 @@ export default function CrearSubastaScreen() {
     Animated.timing(fadeAnim, { toValue: 1, duration: 500, useNativeDriver: true }).start();
   }, []);
 
+  // ── Android picker handler ────────────────────────────────────────
+  const handleAndroidChange = (_: DateTimePickerEvent, d?: Date) => {
+    setShowAndroidPicker(false);
+    if (!d) return;
+    if (androidPickerMode === "date") setSelectedDate(d);
+    else setSelectedTime(d);
+  };
+
+  const openAndroid = (mode: "date" | "time") => {
+    setAndroidPickerMode(mode);
+    setShowAndroidPicker(true);
+  };
+
+  // ── Submit ────────────────────────────────────────────────────────
   const handleCrear = async () => {
     setError(null);
     setExito(null);
 
-    if (!fecha.trim() || !hora.trim()) {
+    if (!fecha || !hora) {
       setError("La fecha y la hora son obligatorias.");
-      return;
-    }
-
-    const fechaRegex = /^\d{4}-\d{2}-\d{2}$/;
-    if (!fechaRegex.test(fecha.trim())) {
-      setError("La fecha debe tener el formato YYYY-MM-DD (ej: 2026-12-31).");
-      return;
-    }
-
-    const horaRegex = /^\d{2}:\d{2}(:\d{2})?$/;
-    if (!horaRegex.test(hora.trim())) {
-      setError("La hora debe tener el formato HH:MM o HH:MM:SS (ej: 18:00).");
       return;
     }
 
     setLoading(true);
     try {
       const payload = {
-        fecha:    fecha.trim(),
-        hora:     hora.trim().length === 5 ? `${hora.trim()}:00` : hora.trim(),
+        fecha,
+        hora,
         categoria,
         ...(ubicacion.trim()  && { ubicacion: ubicacion.trim() }),
         ...(capacidad.trim()  && { capacidadAsistentes: parseInt(capacidad, 10) }),
@@ -146,6 +345,9 @@ export default function CrearSubastaScreen() {
       setLoading(false);
     }
   };
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
   return (
     <KeyboardAvoidingView
@@ -186,30 +388,28 @@ export default function CrearSubastaScreen() {
           <View style={styles.card}>
 
             {/* Fecha */}
-            <Field label="FECHA" icon="event">
-              <TextInput
-                style={styles.input}
-                placeholder="YYYY-MM-DD"
-                placeholderTextColor={MUTED}
-                value={fecha}
-                onChangeText={setFecha}
-                keyboardType="numeric"
-              />
-            </Field>
+            <PickerButton
+              icon="event"
+              label="FECHA"
+              value={fecha}
+              placeholder="Seleccioná una fecha"
+              onPress={() =>
+                Platform.OS === "ios" ? setShowDatePicker(true) : openAndroid("date")
+              }
+            />
 
             <View style={styles.divider} />
 
             {/* Hora */}
-            <Field label="HORA" icon="schedule">
-              <TextInput
-                style={styles.input}
-                placeholder="HH:MM:SS"
-                placeholderTextColor={MUTED}
-                value={hora}
-                onChangeText={setHora}
-                keyboardType="numeric"
-              />
-            </Field>
+            <PickerButton
+              icon="schedule"
+              label="HORA"
+              value={hora ? hora.slice(0, 5) : ""}
+              placeholder="Seleccioná una hora"
+              onPress={() =>
+                Platform.OS === "ios" ? setShowTimePicker(true) : openAndroid("time")
+              }
+            />
 
             <View style={styles.divider} />
 
@@ -291,7 +491,7 @@ export default function CrearSubastaScreen() {
             <View style={styles.summaryRow}>
               <MaterialIcons name="schedule" size={13} color={MUTED} />
               <Text style={styles.summaryLabel}>Hora</Text>
-              <Text style={styles.summaryValue}>{hora || "—"}</Text>
+              <Text style={styles.summaryValue}>{hora ? hora.slice(0, 5) : "—"}</Text>
             </View>
             <View style={styles.summaryRow}>
               <MaterialIcons name="place" size={13} color={MUTED} />
@@ -350,6 +550,43 @@ export default function CrearSubastaScreen() {
 
         </Animated.View>
       </ScrollView>
+
+      {/* ── iOS modals ────────────────────────────────────────────────── */}
+      {Platform.OS === "ios" && (
+        <>
+          <IOSPickerModal
+            visible={showDatePicker}
+            mode="date"
+            date={selectedDate ?? today}
+            minimumDate={today}
+            onConfirm={(d) => { setSelectedDate(d); setShowDatePicker(false); }}
+            onCancel={() => setShowDatePicker(false)}
+          />
+          <IOSPickerModal
+            visible={showTimePicker}
+            mode="time"
+            date={selectedTime ?? new Date()}
+            onConfirm={(d) => { setSelectedTime(d); setShowTimePicker(false); }}
+            onCancel={() => setShowTimePicker(false)}
+          />
+        </>
+      )}
+
+      {/* ── Android native picker ─────────────────────────────────────── */}
+      {Platform.OS === "android" && showAndroidPicker && (
+        <DateTimePicker
+          value={
+            androidPickerMode === "date"
+              ? (selectedDate ?? today)
+              : (selectedTime ?? new Date())
+          }
+          mode={androidPickerMode}
+          display="default"
+          onChange={handleAndroidChange}
+          minimumDate={androidPickerMode === "date" ? today : undefined}
+        />
+      )}
+
     </KeyboardAvoidingView>
   );
 }
