@@ -6,7 +6,7 @@ import { API_BASE_URL } from "@/config";
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: { "Content-Type": "application/json" },
-  timeout: 10000,
+  timeout: 60000,
 });
 
 // Interceptor: adjunta el token JWT automáticamente en cada request
