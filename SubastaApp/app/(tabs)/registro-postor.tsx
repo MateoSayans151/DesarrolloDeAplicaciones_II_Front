@@ -65,7 +65,8 @@ export default function RegistroPostorScreen() {
       const result = await ImagePicker.launchCameraAsync({
         mediaTypes: ["images"],
         allowsEditing: false,
-        quality: 0.7,
+        quality: 0.5,  // ← reducido para achicar el tamaño inicial
+        exif: false,   // ← no necesitamos metadatos EXIF
       });
       if (!result.canceled && result.assets?.length > 0) {
         setter(result.assets[0].uri);
@@ -91,7 +92,6 @@ export default function RegistroPostorScreen() {
         uriToBase64(frenteUri),
         uriToBase64(dorsoUri),
       ]);
-
       setPaso1({
         nombre,
         apellido,
@@ -116,6 +116,7 @@ export default function RegistroPostorScreen() {
         codigoPostal: parseInt(codigoPostal, 10),
         fotoDocumentoFrente: frenteB64,
         fotoDocumentoDorso: dorsoB64,
+        categoria: "comun"
       });
 
       router.push("/(tabs)/registro-verificacion" as any);
@@ -134,12 +135,6 @@ export default function RegistroPostorScreen() {
       <BackButton />
       <LogoHeader />
       <Text style={styles.title}>REGISTRO DE POSTOR</Text>
-      <Text style={styles.subtitle}>PASO 1 DE 2</Text>
-
-      <View style={styles.progressContainer}>
-        <View style={styles.progressDotActive} />
-        <View style={styles.progressDot} />
-      </View>
 
       <Text style={styles.sectionTitle}>DATOS PERSONALES</Text>
       <View style={styles.inputContainer}>
