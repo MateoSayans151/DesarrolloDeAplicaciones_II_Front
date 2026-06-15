@@ -74,7 +74,7 @@ function SubastaCard({ item }: { item: SubastaResponse }) {
     <TouchableOpacity
       style={styles.subastaCard}
       activeOpacity={0.82}
-      onPress={() => router.push(`/(tabs)/SubastaElegida?id=${item.id}` as any)}
+      onPress={() => router.push(`/views/SubastaElegida?id=${item.id}` as any)}
     >
       <View style={styles.subastaInfo}>
         <Text style={styles.subastaTitle}>Subasta #{item.id}</Text>
@@ -129,7 +129,7 @@ export default function ProductosScreen() {
         <TouchableOpacity
           style={styles.addButton}
           activeOpacity={0.8}
-          onPress={() => router.push("/(tabs)/ofrecer-articulo" as any)}
+          onPress={() => router.push("/views/ofrecer-articulo" as any)}
         >
           <MaterialIcons name="add" size={22} color="#111111" />
         </TouchableOpacity>
@@ -145,7 +145,7 @@ export default function ProductosScreen() {
             <ProductCard
               key={item.id}
               item={item}
-              onInfo={() => router.push(`/(tabs)/informacion-producto?id=${item.id}` as any)}
+              onInfo={() => router.push(`/views/informacion-producto?id=${item.id}` as any)}
               onDelete={() => handleEliminar(item.id)}
             />
           ))}

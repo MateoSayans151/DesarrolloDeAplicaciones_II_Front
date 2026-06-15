@@ -353,7 +353,7 @@ export default function OfrecerArticuloScreen() {
         await productoService.agregarFoto(producto.id, foto);
       }
 
-      router.replace("/(tabs)/productos" as any);
+      router.replace("/views/productos" as any);
     } catch (e: any) {
       setSubmitError(e.message ?? "No se pudo enviar el artículo. Intentá de nuevo.");
     } finally {

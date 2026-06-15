@@ -1,17 +1,18 @@
-import usuarioService, { UsuarioResponse } from "@/models/services/usuarioService";
+import usuarioService, { NivelProgressResponse, UsuarioResponse } from "@/models/services/usuarioService";
 import { C } from "@/styles/colors";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert, Animated, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { NotificationsPanel } from "../app/(tabs)/notificaciones";
+import { NotificationsPanel } from "../app/views/notificaciones";
 import { XPLevelRing } from "./XPLevelRing";
 
 export function ScreenHeader() {
   const router = useRouter();
   const [showNotifs, setShowNotifs] = useState(false);
   const [usuario, setUsuario] = useState<UsuarioResponse | null>(null);
+  const [nivelProgress, setNivelProgress] = useState<NivelProgressResponse | null>(null);
   const [notificationCount, setNotificationCount] = useState(0);
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const glowAnim  = useRef(new Animated.Value(0.4)).current;
@@ -30,6 +31,8 @@ export function ScreenHeader() {
       try {
         const data = await usuarioService.obtenerPerfil();
         setUsuario(data);
+        const nivel = await usuarioService.obtenerNivelProgress(data.id);
+        setNivelProgress(nivel);
       } catch {
         Alert.alert("Error", "No se pudo cargar el perfil.");
       }
@@ -83,7 +86,7 @@ export function ScreenHeader() {
         {/* ── Avatar / Perfil ──────────────────────────────────────────── */}
         <TouchableOpacity
           style={styles.profileBtn}
-          onPress={() => router.push("/perfil")}
+          onPress={() => router.push("/views/perfil")}
           activeOpacity={0.8}
         >
           <View style={styles.avatarWrap}>
@@ -107,7 +110,12 @@ export function ScreenHeader() {
 
         {/* ── XP Ring centrado ─────────────────────────────────────────── */}
         <View style={styles.ringWrap}>
-          <XPLevelRing size={90} strokeWidth={3} tier="gold" />
+          <XPLevelRing
+            size={90}
+            strokeWidth={3}
+            tier={nivelProgress?.tier ?? "comun"}
+            progreso={nivelProgress?.progreso ?? 0}
+          />
         </View>
 
         {/* ── Notificaciones ───────────────────────────────────────────── */}
