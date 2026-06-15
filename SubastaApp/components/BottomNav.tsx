@@ -5,18 +5,18 @@ import { Animated, StyleSheet, Text, TouchableOpacity, View } from "react-native
 import { C } from "@/styles/colors";
 
 const USER_TABS = [
-  { id: "home",      label: "HOME",      icon: "radio-button-unchecked", badge: null, route: "/home"      },
-  { id: "productos", label: "PRODUCTOS", icon: "grid-view",              badge: null, route: "/productos"  },
-  { id: "pujas",     label: "PUJAS",     icon: "work-outline",           badge: null, route: "/pujas"      },
-  { id: "perfil",    label: "PERFIL",    icon: "person-outline",         badge: null, route: "/perfil"     },
+  { id: "home",      label: "HOME",      icon: "radio-button-unchecked", badge: null, route: "/views/home"      },
+  { id: "productos", label: "PRODUCTOS", icon: "grid-view",              badge: null, route: "/views/productos"  },
+  { id: "pujas",     label: "PUJAS",     icon: "work-outline",           badge: null, route: "/views/pujas"      },
+  { id: "perfil",    label: "PERFIL",    icon: "person-outline",         badge: null, route: "/views/perfil"     },
 ] as const;
 
 const ADMIN_TABS = [
-  { id: "admin-subastas",  label: "SUBASTAS",  icon: "gavel",          badge: null, route: "/admin-subastas"  },
-  { id: "admin-productos", label: "PRODUCTOS", icon: "inventory",      badge: null, route: "/admin-productos" },
-  { id: "admin-catalogos", label: "CATÁLOGOS", icon: "list-alt",       badge: null, route: "/admin-catalogos" },
-  { id: "admin-usuarios",  label: "USUARIOS",  icon: "how-to-reg",     badge: null, route: "/admin-usuarios"  },
-  { id: "perfil",          label: "PERFIL",    icon: "person-outline", badge: null, route: "/perfil"          },
+  { id: "admin-subastas",  label: "SUBASTAS",  icon: "gavel",          badge: null, route: "/views/admin-subastas"  },
+  { id: "admin-productos", label: "PRODUCTOS", icon: "inventory",      badge: null, route: "/views/admin-productos" },
+  { id: "admin-catalogos", label: "CATÁLOGOS", icon: "list-alt",       badge: null, route: "/views/admin-catalogos" },
+  { id: "admin-usuarios",  label: "USUARIOS",  icon: "how-to-reg",     badge: null, route: "/views/admin-usuarios"  },
+  { id: "perfil",          label: "PERFIL",    icon: "person-outline", badge: null, route: "/views/perfil"          },
 ] as const;
 
 export type TabId =

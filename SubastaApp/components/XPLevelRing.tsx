@@ -1,33 +1,31 @@
 import { View } from "react-native";
-import { Svg, Circle, Text as SvgText } from "react-native-svg";
+import { Svg, Circle } from "react-native-svg";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { C } from "@/styles/colors";
 
-type UserTier = "bronze" | "silver" | "gold" | "diamond";
+type UserTier = "comun" | "plata" | "oro" | "platino" | "especial";
 
 interface XPLevelRingProps {
   size?: number;
   strokeWidth?: number;
   tier?: UserTier;
+  progreso?: number; // 0.0 a 1.0
 }
 
 const TIER_COLORS: Record<UserTier, string> = {
-  bronze: "#CD7F32",
-  silver: "#C0C0C0",
-  gold: C.brightGold,
-  diamond: "#00D9FF",
+  comun:   "#CD7F32",
+  plata:   "#C0C0C0",
+  oro:     C.brightGold,
+  platino: "#E5E4E2",
+  especial:"#00D9FF",
 };
 
-export function XPLevelRing({ size = 50, strokeWidth = 3, tier = "bronze" }: XPLevelRingProps) {
-  // TODO: Reemplazar con datos del backend
-  const currentXP = 450;
-  const maxXPPerLevel = 1000;
-
+export function XPLevelRing({ size = 50, strokeWidth = 3, tier = "comun", progreso = 0 }: XPLevelRingProps) {
   const tierColor = TIER_COLORS[tier];
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
-  const progress = currentXP / maxXPPerLevel;
-  const strokeDashoffset = circumference * (1 - progress);
+  const clampedProgreso = Math.min(Math.max(progreso, 0), 1);
+  const strokeDashoffset = circumference * (1 - clampedProgreso);
 
   return (
     <View style={{ width: size, height: size, justifyContent: "center", alignItems: "center" }}>
@@ -40,7 +38,6 @@ export function XPLevelRing({ size = 50, strokeWidth = 3, tier = "bronze" }: XPL
           strokeWidth={strokeWidth}
           fill="none"
         />
-
         <Circle
           cx={size / 2}
           cy={size / 2}
@@ -59,9 +56,7 @@ export function XPLevelRing({ size = 50, strokeWidth = 3, tier = "bronze" }: XPL
         name="star"
         size={size * 0.7}
         color={tierColor}
-        style={{
-          position: "absolute",
-        }}
+        style={{ position: "absolute" }}
       />
     </View>
   );

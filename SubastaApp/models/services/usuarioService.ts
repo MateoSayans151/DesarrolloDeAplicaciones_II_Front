@@ -82,6 +82,14 @@ export interface NotificacionResponse {
   fechaCreacion: string;
 }
 
+export interface NivelProgressResponse {
+  nivelActual: string;
+  pujasGanadas: number;
+  pujasParaSiguiente: number | null;
+  progreso: number; // 0.0 a 1.0
+  tier: "comun" | "plata" | "oro" | "platino" | "especial";
+}
+
 export interface MiPujaResponse {
   pujaId: number;
   importe: number;
@@ -129,6 +137,11 @@ const usuarioService = {
     await api.patch("/usuarios/me", {
       fotoBase64: `data:image/jpeg;base64,${base64}`,
     });
+  },
+
+  async actualizarPerfil(data: { nombre?: string; domicilio?: string }): Promise<UsuarioResponse> {
+    const res = await api.patch<UsuarioResponse>("/usuarios/me", data);
+    return res.data;
   },
 
   async agregarMedioPago(req: Record<string, unknown>): Promise<PaymentMethod> {
@@ -186,6 +199,11 @@ const usuarioService = {
 
   async listarMisPujas(usuarioId: number): Promise<MiPujaResponse[]> {
     const res = await api.get<MiPujaResponse[]>(`/usuarios/${usuarioId}/pujas`);
+    return res.data;
+  },
+
+  async obtenerNivelProgress(id: number): Promise<NivelProgressResponse> {
+    const res = await api.get<NivelProgressResponse>(`/usuarios/${id}/nivel`);
     return res.data;
   },
 

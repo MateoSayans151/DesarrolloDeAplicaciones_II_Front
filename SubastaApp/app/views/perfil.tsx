@@ -284,7 +284,7 @@ export default function PerfilScreen() {
 
   const handleLogout = async () => {
     await usuarioService.logout();
-    router.replace("/");
+    router.replace("/views");
   };
 
   const handleAddPayment = async () => {

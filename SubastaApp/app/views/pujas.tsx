@@ -37,7 +37,7 @@ function BidCard({ item }: { item: MiPujaResponse }) {
       <TouchableOpacity
         style={[styles.bidAction, superada && styles.bidActionSuperada]}
         activeOpacity={0.75}
-        onPress={() => router.push(`/(tabs)/SubastaElegida?id=${item.subastaId}` as any)}
+        onPress={() => router.push(`/views/SubastaElegida?id=${item.subastaId}` as any)}
       >
         <MaterialIcons name="gavel" size={28} color={superada ? "#e74c3c" : C.gold} />
       </TouchableOpacity>
