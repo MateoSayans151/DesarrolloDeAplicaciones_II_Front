@@ -34,6 +34,7 @@ export default function HomeScreen() {
       await usuarioService.login({ documento, password });
       console.log("[LOGIN] token guardado, obteniendo perfil...");
       const perfil = await usuarioService.obtenerPerfil();
+      const nivelProgress = await usuarioService.obtenerNivelProgress(perfil.categoria);
       console.log("[LOGIN] perfil:", JSON.stringify(perfil));
       if (perfil.role === "ADMIN") {
         router.replace("/views/admin-subastas" as any);

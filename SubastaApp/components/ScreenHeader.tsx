@@ -7,6 +7,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert, Animated, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { NotificationsPanel } from "../app/views/notificaciones";
 import { XPLevelRing } from "./XPLevelRing";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export function ScreenHeader() {
   const router = useRouter();
@@ -29,10 +30,18 @@ export function ScreenHeader() {
   useEffect(() => {
     const cargarUsuario = async () => {
       try {
-        const data = await usuarioService.obtenerPerfil();
-        setUsuario(data);
-        const nivel = await usuarioService.obtenerNivelProgress(data.id);
-        setNivelProgress(nivel);
+        const storageUsuario = await AsyncStorage.getItem("usuario");
+        if (storageUsuario) {
+          setUsuario(JSON.parse(storageUsuario));
+        }
+
+        const storageNivelProgress = await AsyncStorage.getItem("nivelProgress");
+        if (storageNivelProgress) {
+          setNivelProgress(JSON.parse(storageNivelProgress));
+        } else {
+          const nivel = usuario?.categoria;
+          setNivelProgress(await usuarioService.obtenerNivelProgress(nivel ?? 0));
+        }
       } catch {
         Alert.alert("Error", "No se pudo cargar el perfil.");
       }
@@ -61,7 +70,7 @@ export function ScreenHeader() {
     return () => { loop.stop(); glow.stop(); };
   }, [notificationCount, pulseAnim, glowAnim]);
 
-  const categoria = usuario?.categoria?.toUpperCase() ?? "COMÚN";
+  const categoria = nivelProgress?.tier?.toUpperCase();
 
   return (
     <>
