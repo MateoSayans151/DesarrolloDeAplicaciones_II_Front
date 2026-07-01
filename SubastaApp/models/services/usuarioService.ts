@@ -47,7 +47,7 @@ export interface UsuarioResponse {
   direccion?: string;
   fotoBase64?: string;
   verificado: "si" | "no";
-  categoria: number;
+  nivelCategoria: NivelCategoria;
   role?: "USER" | "ADMIN";
   mediosPago?: PaymentMethod[];
 }
@@ -81,7 +81,11 @@ export interface NotificacionResponse {
   categoriaDestino: string;
   fechaCreacion: string;
 }
-
+export interface NivelCategoria {
+  id: number;
+  nombre: string;
+  pujasGanadasNecesarias: number;
+}
 export interface NivelProgressResponse {
   nivelActual: string;
   pujasGanadas: number;
@@ -122,8 +126,9 @@ const usuarioService = {
   },
 
   async obtenerPerfil(): Promise<UsuarioResponse> {
-    const res = await api.get<UsuarioResponse>("/usuarios/me");
-    const { fotoDocumentoFrente, fotoDocumentoDorso, ...perfilReducido } =
+    const token = await AsyncStorage.getItem("token");
+    const res = await api.get<UsuarioResponse>("/usuarios/me",token ? { headers: { Authorization: `Bearer ${token}` } } : undefined);
+    const { fotoDocumentoFrente, fotoDocumentoDorso,categoria, ...perfilReducido } =
       res.data as any;
     await AsyncStorage.setItem("usuario", JSON.stringify(perfilReducido));
     return res.data;
