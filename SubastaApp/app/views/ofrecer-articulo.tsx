@@ -332,9 +332,14 @@ export default function OfrecerArticuloScreen() {
       return Alert.alert("Declaraciones requeridas", "Debés aceptar ambas declaraciones para continuar.");
     }
 
+    const fotos = form.fotos.filter(Boolean);
+    if (fotos.length < 6) {
+      return Alert.alert("Fotos requeridas", "Debés cargar al menos 6 fotos del producto.");
+    }
+
     setSubmitting(true);
     try {
-      const producto = await productoService.crear({
+      await productoService.crear({
         descripcionCompleta: form.titulo + (form.descripcion ? "\n" + form.descripcion : ""),
         fecha: form.fechaCreacion ? form.fechaCreacion.replace(/\//g, "-") : undefined,
         artista: form.artista || undefined,
@@ -347,11 +352,8 @@ export default function OfrecerArticuloScreen() {
         ubicacionDeposito: form.ubicacionDeposito || undefined,
         origenLicitoDeclarado: form.declaraPropiedad,
         propietarioDeclarado: form.declaraEnvio,
+        fotos: fotos.map((fotoBase64) => ({ fotoBase64 })),
       });
-
-      for (const foto of form.fotos.filter(Boolean)) {
-        await productoService.agregarFoto(producto.id, foto);
-      }
 
       router.replace("/views/productos" as any);
     } catch (e: any) {

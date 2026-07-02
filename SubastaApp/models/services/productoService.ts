@@ -13,6 +13,7 @@ export interface ProductoRequest {
   ubicacionDeposito?: string;
   origenLicitoDeclarado: boolean;
   propietarioDeclarado: boolean;
+  fotos: { fotoBase64: string }[]; // mínimo 6, validado en el backend
 }
 
 export interface ProductoResponse {
