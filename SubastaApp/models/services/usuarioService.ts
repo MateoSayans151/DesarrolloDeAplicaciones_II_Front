@@ -78,7 +78,7 @@ export interface NotificacionResponse {
   id: number;
   titulo: string;
   mensaje: string;
-  categoriaDestino: string;
+  categoriaDestino?: string;
   fechaCreacion: string;
 }
 export interface NivelCategoria {

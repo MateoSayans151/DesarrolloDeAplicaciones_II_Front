@@ -131,9 +131,9 @@ function SubTitle({ text }: { text: string }) {
   return <Text style={{ color: MUTED, fontFamily: "serif", fontSize: 22, fontWeight: "600", textAlign: "center", marginBottom: 20 }}>{text}</Text>;
 }
 
-function ContinuarBtn({ label, onPress, loading }: { label: string; onPress: () => void; loading?: boolean }) {
+function ContinuarBtn({ label, onPress, loading, disabled }: { label: string; onPress: () => void; loading?: boolean; disabled?: boolean }) {
   return (
-    <TouchableOpacity onPress={onPress} disabled={loading} activeOpacity={0.85} style={btn.btn}>
+    <TouchableOpacity onPress={onPress} disabled={loading || disabled} activeOpacity={0.85} style={[btn.btn, disabled && btn.btnDisabled]}>
       {loading ? <ActivityIndicator color="#091525" /> : <Text style={btn.text}>{label}</Text>}
     </TouchableOpacity>
   );
@@ -141,6 +141,7 @@ function ContinuarBtn({ label, onPress, loading }: { label: string; onPress: () 
 
 const btn = StyleSheet.create({
   btn: { marginTop: 20, backgroundColor: GOLD, borderRadius: 10, height: 42, alignItems: "center", justifyContent: "center", shadowColor: GOLD, shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 6 },
+  btnDisabled: { opacity: 0.4, shadowOpacity: 0 },
   text: { color: "#091525", fontFamily: "serif", fontSize: 18, fontWeight: "900" },
 });
 
@@ -192,6 +193,8 @@ function Paso2({ data, set, onNext }: { data: FormData; set: (d: Partial<FormDat
   };
 
   const slots = Array.from({ length: MAX_FOTOS });
+  const cantidadFotos = data.fotos.filter(Boolean).length;
+  const puedeContinuar = cantidadFotos >= MAX_FOTOS;
 
   return (
     <>
@@ -213,8 +216,13 @@ function Paso2({ data, set, onNext }: { data: FormData; set: (d: Partial<FormDat
           );
         })}
       </View>
-      <Text style={[s.hint, { textAlign: "center", marginBottom: 8 }]}>{data.fotos.filter(Boolean).length}/{MAX_FOTOS}</Text>
-      <ContinuarBtn label="CONTINUAR" onPress={onNext} />
+      <Text style={[s.hint, { textAlign: "center", marginBottom: 8 }]}>{cantidadFotos}/{MAX_FOTOS}</Text>
+      {!puedeContinuar && (
+        <Text style={[s.hint, { textAlign: "center", color: "#e74c3c", marginBottom: 4 }]}>
+          Te falta{MAX_FOTOS - cantidadFotos === 1 ? "" : "n"} {MAX_FOTOS - cantidadFotos} foto{MAX_FOTOS - cantidadFotos === 1 ? "" : "s"} para poder continuar.
+        </Text>
+      )}
+      <ContinuarBtn label="CONTINUAR" onPress={onNext} disabled={!puedeContinuar} />
     </>
   );
 }

@@ -1,7 +1,7 @@
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { ScreenLayout } from "@/components/ScreenLayout";
 import { C } from "@/styles/colors";
 import productoService, { ProductoResponse } from "@/models/services/productoService";
@@ -9,17 +9,17 @@ import subastaService, { SubastaResponse } from "@/models/services/subastaServic
 import usuarioService from "@/models/services/usuarioService";
 
 const STATUS_MAP: Record<string, { label: string; color: string }> = {
-  PENDIENTE:  { label: "En revisión",  color: "#d4af37" },
-  ACEPTADO:   { label: "Publicado",    color: "#2ecc71" },
-  RECHAZADO:  { label: "Rechazado",    color: "#e74c3c" },
-  DEVUELTO:   { label: "Devuelto",     color: "#e67e22" },
-  EN_SUBASTA: { label: "En subasta",   color: "#3498db" },
-  VENDIDO:    { label: "Vendido",      color: "#9b59b6" },
+  PENDIENTE_INSPECCION:  { label: "En inspección",         color: "#d4af37" },
+  RECHAZADO:             { label: "Rechazado",             color: "#e74c3c" },
+  PROPUESTA_ENVIADA:     { label: "Propuesta recibida",    color: "#3498db" },
+  ACEPTADO_POR_USUARIO:  { label: "Precio aceptado",       color: "#2ecc71" },
+  RECHAZADO_POR_USUARIO: { label: "Rechazaste el precio",  color: "#95a5a6" },
+  INCLUIDO_EN_SUBASTA:   { label: "En subasta",            color: "#9b59b6" },
 };
 
 function ProductCard({ item, onInfo, onDelete }: { item: ProductoResponse; onInfo: () => void; onDelete: () => void }) {
   const status = STATUS_MAP[item.estado] ?? { label: item.estado, color: C.gold };
-  const esPendiente = item.estado === "PENDIENTE";
+  const esPendiente = item.estado === "PENDIENTE_INSPECCION";
   const [confirming, setConfirming] = useState(false);
 
   return (

@@ -19,7 +19,7 @@ export interface ProductoRequest {
 export interface ProductoResponse {
   id: number;
   descripcionCompleta: string;
-  estado: "PENDIENTE" | "ACEPTADO" | "RECHAZADO" | "DEVUELTO" | "EN_SUBASTA" | "VENDIDO";
+  estado: "PENDIENTE_INSPECCION" | "RECHAZADO" | "PROPUESTA_ENVIADA" | "ACEPTADO_POR_USUARIO" | "RECHAZADO_POR_USUARIO" | "INCLUIDO_EN_SUBASTA";
   propietarioUsuarioId: number;
   artista?: string;
   disenador?: string;
@@ -30,6 +30,9 @@ export interface ProductoResponse {
   monedaAsegurado?: string;
   ubicacionDeposito?: string;
   motivoRechazo?: string;
+  precioPropuesto?: number;
+  origenLicitoDeclarado?: boolean;
+  propietarioDeclarado?: boolean;
   fotos?: string[];
 }
 
@@ -64,6 +67,18 @@ const productoService = {
 
   async aprobar(id: number, precioBase: number): Promise<void> {
     await api.patch(`/productos/admin/${id}/aprobar`, { precioBase });
+  },
+
+  async rechazar(id: number, motivoRechazo: string): Promise<void> {
+    await api.patch(`/productos/admin/${id}/rechazar`, { motivoRechazo });
+  },
+
+  async aceptarPrecio(id: number): Promise<void> {
+    await api.patch(`/productos/${id}/aceptar-precio`);
+  },
+
+  async rechazarPrecio(id: number): Promise<void> {
+    await api.patch(`/productos/${id}/rechazar-precio`);
   },
 };
 

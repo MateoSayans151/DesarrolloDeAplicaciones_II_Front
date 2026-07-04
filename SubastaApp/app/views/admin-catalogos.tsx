@@ -139,11 +139,11 @@ export default function AdminCatalogosScreen() {
 
       if (det === null) {
         setSinCatalogo(true);
-        setProductosDisponibles(todos.filter((p) => p.estado === "ACEPTADO"));
+        setProductosDisponibles(todos.filter((p) => p.estado === "ACEPTADO_POR_USUARIO"));
       } else {
         setCatalogo(det);
         const enCatalogo = new Set(det.items.map((i) => i.producto.id));
-        setProductosDisponibles(todos.filter((p) => p.estado === "ACEPTADO" && !enCatalogo.has(p.id)));
+        setProductosDisponibles(todos.filter((p) => p.estado === "ACEPTADO_POR_USUARIO" && !enCatalogo.has(p.id)));
       }
     } catch (e: any) {
       setErrorCatalogo(e?.message ?? "Error al cargar el catálogo.");
@@ -196,7 +196,7 @@ export default function AdminCatalogosScreen() {
     try {
       await catalogoService.agregarItemAdmin(catalogo.id, {
         producto: producto.id,
-        precioBase: producto.montoAsegurado ?? 0,
+        precioBase: producto.precioPropuesto ?? 0,
         comision: COMISION_DEFAULT,
       });
       // Refrescar catálogo y lista de disponibles
@@ -304,7 +304,7 @@ export default function AdminCatalogosScreen() {
           <View style={s.divider} />
 
           {/* Productos disponibles para agregar */}
-          <Text style={s.sectionLabel}>PRODUCTOS APROBADOS DISPONIBLES</Text>
+          <Text style={s.sectionLabel}>PRODUCTOS CON PRECIO ACORDADO DISPONIBLES</Text>
           {errorAgregar ? (
             <View style={s.errorBox}>
               <MaterialIcons name="error-outline" size={14} color="#e74c3c" />
@@ -312,16 +312,16 @@ export default function AdminCatalogosScreen() {
             </View>
           ) : null}
           {productosDisponibles.length === 0 ? (
-            <Text style={s.emptyHint}>No hay productos aprobados para agregar.</Text>
+            <Text style={s.emptyHint}>No hay productos con precio acordado para agregar.</Text>
           ) : (
             productosDisponibles.map((p) => (
               <View key={p.id} style={s.productoRow}>
                 <View style={{ flex: 1 }}>
                   <Text style={s.itemDesc} numberOfLines={2}>{p.descripcionCompleta}</Text>
                   {p.artista ? <Text style={s.itemMeta}>Artista: {p.artista}</Text> : null}
-                  {p.montoAsegurado != null
-                    ? <Text style={s.itemMeta}>Precio base: {p.monedaAsegurado ?? ""} ${p.montoAsegurado}</Text>
-                    : <Text style={[s.itemMeta, { color: "#e67e22" }]}>Sin precio base cargado</Text>
+                  {p.precioPropuesto != null
+                    ? <Text style={s.itemMeta}>Precio acordado: ${p.precioPropuesto}</Text>
+                    : <Text style={[s.itemMeta, { color: "#e67e22" }]}>Sin precio acordado</Text>
                   }
                 </View>
                 <TouchableOpacity

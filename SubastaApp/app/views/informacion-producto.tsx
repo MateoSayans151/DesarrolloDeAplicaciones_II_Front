@@ -2,18 +2,18 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { ScreenLayout } from "@/components/ScreenLayout";
 import { C } from "@/styles/colors";
 import productoService, { ProductoResponse } from "@/models/services/productoService";
 
 const STATUS_MAP: Record<string, { label: string; color: string }> = {
-  PENDIENTE:  { label: "En revisión",  color: "#d4af37" },
-  ACEPTADO:   { label: "Publicado",    color: "#2ecc71" },
-  RECHAZADO:  { label: "Rechazado",    color: "#e74c3c" },
-  DEVUELTO:   { label: "Devuelto",     color: "#e67e22" },
-  EN_SUBASTA: { label: "En subasta",   color: "#3498db" },
-  VENDIDO:    { label: "Vendido",      color: "#9b59b6" },
+  PENDIENTE_INSPECCION:  { label: "En inspección",         color: "#d4af37" },
+  RECHAZADO:             { label: "Rechazado",             color: "#e74c3c" },
+  PROPUESTA_ENVIADA:     { label: "Propuesta recibida",    color: "#3498db" },
+  ACEPTADO_POR_USUARIO:  { label: "Precio aceptado",       color: "#2ecc71" },
+  RECHAZADO_POR_USUARIO: { label: "Rechazaste el precio",  color: "#95a5a6" },
+  INCLUIDO_EN_SUBASTA:   { label: "En subasta",            color: "#9b59b6" },
 };
 
 function Row({ label, value }: { label: string; value?: string | null }) {
@@ -31,14 +31,58 @@ export default function InformacionProductoScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [producto, setProducto] = useState<ProductoResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [respondiendo, setRespondiendo] = useState(false);
+
+  const cargarProducto = () => {
+    if (!id) return;
+    return productoService.obtener(Number(id))
+      .then(setProducto)
+      .catch(() => {});
+  };
 
   useEffect(() => {
-    if (!id) return;
-    productoService.obtener(Number(id))
-      .then(setProducto)
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    setLoading(true);
+    Promise.resolve(cargarProducto()).finally(() => setLoading(false));
   }, [id]);
+
+  const handleAceptarPrecio = async () => {
+    if (!producto) return;
+    setRespondiendo(true);
+    try {
+      await productoService.aceptarPrecio(producto.id);
+      await cargarProducto();
+    } catch (e: any) {
+      Alert.alert("Error", e.message ?? "No se pudo aceptar el precio.");
+    } finally {
+      setRespondiendo(false);
+    }
+  };
+
+  const handleRechazarPrecio = () => {
+    if (!producto) return;
+    Alert.alert(
+      "Rechazar precio",
+      "Esta acción es definitiva: el producto quedará rechazado y no podrás volver a ofrecerlo. ¿Confirmás?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Rechazar",
+          style: "destructive",
+          onPress: async () => {
+            setRespondiendo(true);
+            try {
+              await productoService.rechazarPrecio(producto.id);
+              await cargarProducto();
+            } catch (e: any) {
+              Alert.alert("Error", e.message ?? "No se pudo rechazar el precio.");
+            } finally {
+              setRespondiendo(false);
+            }
+          },
+        },
+      ]
+    );
+  };
 
   if (loading) {
     return (
@@ -104,6 +148,33 @@ export default function InformacionProductoScreen() {
         <Row label="Monto asegurado" value={producto.montoAsegurado != null ? `${producto.monedaAsegurado ?? ""} $${producto.montoAsegurado}`.trim() : null} />
       </View>
 
+      {producto.estado === "PROPUESTA_ENVIADA" && (
+        <>
+          <Text style={s.sectionTitle}>PROPUESTA RECIBIDA</Text>
+          <View style={s.infoCard}>
+            <Row label="Precio propuesto" value={producto.precioPropuesto != null ? `$${producto.precioPropuesto}` : null} />
+            <View style={{ flexDirection: "row", gap: 10, marginTop: 4 }}>
+              <TouchableOpacity
+                style={[s.aceptarBtn, respondiendo && { opacity: 0.5 }]}
+                onPress={handleAceptarPrecio}
+                disabled={respondiendo}
+                activeOpacity={0.85}
+              >
+                {respondiendo ? <ActivityIndicator color="#111" size="small" /> : <Text style={s.aceptarBtnText}>ACEPTAR</Text>}
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[s.rechazarPrecioBtn, respondiendo && { opacity: 0.5 }]}
+                onPress={handleRechazarPrecio}
+                disabled={respondiendo}
+                activeOpacity={0.85}
+              >
+                <Text style={s.rechazarPrecioBtnText}>RECHAZAR</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </>
+      )}
+
       <Text style={s.sectionTitle}>DECLARACIONES</Text>
       <View style={s.infoCard}>
         <View style={s.row}>
@@ -143,4 +214,8 @@ const s = StyleSheet.create({
   motivoText: { color: C.muted, fontFamily: "serif", fontSize: 13, lineHeight: 18 },
   empty: { color: C.muted, fontFamily: "serif", fontSize: 14, textAlign: "center", marginTop: 40 },
   foto: { width: 140, height: 140, borderRadius: 10, backgroundColor: "#202f3a" },
+  aceptarBtn: { flex: 1, backgroundColor: "#2ecc71", borderRadius: 10, paddingVertical: 10, alignItems: "center", justifyContent: "center" },
+  aceptarBtnText: { color: "#0a1f14", fontFamily: "serif", fontSize: 13, fontWeight: "900" },
+  rechazarPrecioBtn: { flex: 1, borderColor: "#e74c3c", borderWidth: 1, borderRadius: 10, paddingVertical: 10, alignItems: "center", justifyContent: "center" },
+  rechazarPrecioBtnText: { color: "#e74c3c", fontFamily: "serif", fontSize: 13, fontWeight: "900" },
 });
