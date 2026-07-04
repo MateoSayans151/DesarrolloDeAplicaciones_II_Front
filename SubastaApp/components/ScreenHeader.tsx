@@ -1,4 +1,4 @@
-import usuarioService, { NivelProgressResponse, UsuarioResponse } from "@/models/services/usuarioService";
+import usuarioService, { NivelCategoria, NivelProgressResponse, UsuarioResponse } from "@/models/services/usuarioService";
 import { C } from "@/styles/colors";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Image } from "expo-image";
@@ -7,6 +7,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert, Animated, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { NotificationsPanel } from "../app/views/notificaciones";
 import { XPLevelRing } from "./XPLevelRing";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export function ScreenHeader() {
   const router = useRouter();
@@ -29,12 +30,21 @@ export function ScreenHeader() {
   useEffect(() => {
     const cargarUsuario = async () => {
       try {
-        const data = await usuarioService.obtenerPerfil();
-        setUsuario(data);
-        const nivel = await usuarioService.obtenerNivelProgress(data.id);
-        setNivelProgress(nivel);
-      } catch {
-        Alert.alert("Error", "No se pudo cargar el perfil.");
+        const storageUsuario = await AsyncStorage.getItem("usuario");
+        const usuarioParsed: UsuarioResponse | null = storageUsuario
+          ? JSON.parse(storageUsuario)
+          : null;
+        setUsuario(usuarioParsed);
+        console.log("[HEADER] cargando usuario desde storage:", usuarioParsed);
+
+        if (usuarioParsed?.id != null) {
+          console.log("[HEADER] cargando nivel progress para usuario:", usuarioParsed.id);
+          setNivelProgress(await usuarioService.obtenerNivelProgress(usuarioParsed.id));
+        }
+
+      } catch (error: any) {
+        console.error("[HEADER] error cargando usuario/nivel:", error);
+        Alert.alert("Error", error.message || "No se pudo cargar el usuario.");
       }
     };
     cargarUsuario();
@@ -61,7 +71,7 @@ export function ScreenHeader() {
     return () => { loop.stop(); glow.stop(); };
   }, [notificationCount, pulseAnim, glowAnim]);
 
-  const categoria = usuario?.categoria?.toUpperCase() ?? "COMÚN";
+  const categoria = nivelProgress?.tier || usuario?.nivelCategoria?.nombre || "Sin categoría";
 
   return (
     <>
@@ -113,7 +123,7 @@ export function ScreenHeader() {
           <XPLevelRing
             size={90}
             strokeWidth={3}
-            tier={nivelProgress?.tier ?? "comun"}
+            tier={nivelProgress?.tier?.toLowerCase() as any || "comun"}
             progreso={nivelProgress?.progreso ?? 0}
           />
         </View>

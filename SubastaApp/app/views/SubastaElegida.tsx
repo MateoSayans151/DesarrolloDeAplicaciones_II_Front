@@ -2,6 +2,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef, useState, useCallback } from "react";
 import {
   ActivityIndicator,
+  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -17,7 +18,7 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import subastaService, { AsistenteResponse, SubastaResponse } from "@/models/services/subastaService";
 import catalogoService, { ItemCatalogoDetalleResponse } from "@/models/services/catalogoService";
 import pujaService, { PujaResponse } from "@/models/services/pujaService";
-import usuarioService from "@/models/services/usuarioService";
+import usuarioService, { UsuarioResponse } from "@/models/services/usuarioService";
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
 
@@ -42,6 +43,40 @@ const CATEGORIA_IMAGE: Record<SubastaResponse["categoria"], string> = {
   oro:      "https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=800&h=400&fit=crop",
   platino:  "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&h=400&fit=crop",
 };
+type Categoria = SubastaResponse["categoria"]; // "comun" | "especial" | "plata" | "oro" | "platino"
+
+// Devuelve el motivo por el que el usuario NO puede pujar, o null si puede.
+function motivoNoPuede(usuario: UsuarioResponse | null, subasta: SubastaResponse): string | null {
+  const RANK: Record<Categoria, number> = { comun: 1, especial: 2, plata: 3, oro: 4, platino: 5 };
+  const tieneMedio = usuario?.mediosPago?.some((m) => m.verificado === "si");
+  if (!tieneMedio) return "Necesitás un medio de pago verificado por la empresa para poder pujar.";
+  const userRank = RANK[(usuario?.nivelCategoria?.nombre?.toLowerCase() as Categoria) ?? "comun"];
+  const subRank = RANK[subasta.categoria];
+  if (subRank > userRank) return `Tu categoría no alcanza: esta subasta es de categoría "${subasta.categoria}".`;
+  return null;
+}
+// ─── Screen principal ─────────────────────────────────────────────────────────
+
+export default function SubastaElegidaScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
+
+  const [subasta, setSubasta]       = useState<SubastaResponse | null>(null);
+  const [usuario, setUsuario]       = useState<UsuarioResponse | null>(null);
+  const [asistente, setAsistente]   = useState<AsistenteResponse | null>(null);
+  const [asistentesMap, setAsistentesMap] = useState<Record<number, number>>({});
+  const [items, setItems]           = useState<ItemCatalogoDetalleResponse[]>([]);
+  const [pujasActivas, setPujasActivas] = useState<PujaResponse[]>([]);
+  const [loading, setLoading]       = useState(true);
+  const [joining, setJoining]       = useState(false);
+  const [joinError, setJoinError]   = useState<string | null>(null);
+  const [countdown, setCountdown]   = useState(TIMER_INICIAL);
+
+  const wsCancelRef = useRef<(() => void) | null>(null);
+  const pollingRef  = useRef<ReturnType<typeof setInterval> | null>(null);
+  const timerRef    = useRef<ReturnType<typeof setInterval> | null>(null);
+  const itemActivoIdRef = useRef<number | null | undefined>(null);
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -176,6 +211,7 @@ function ItemActivoCard({
   categoria,
   countdown,
   onPujaLocal,
+  motivoBloqueo,
 }: {
   item: ItemCatalogoDetalleResponse;
   pujas: PujaResponse[];
@@ -183,6 +219,7 @@ function ItemActivoCard({
   categoria: string;
   countdown: number;
   onPujaLocal: (puja: PujaResponse) => void;
+  motivoBloqueo: string | null;
 }) {
   const [importe, setImporte] = useState("");
   const [loading, setLoading] = useState(false);
@@ -195,6 +232,11 @@ function ItemActivoCard({
     : `Mínimo: $${fmt(rango.min)}`;
 
   const handlePujar = async () => {
+    // Bloqueo: sin medio de pago verificado o categoría insuficiente
+    if (motivoBloqueo) {
+      Alert.alert("No podés pujar", motivoBloqueo);
+      return;
+    }
     const monto = parseFloat(importe.replace(",", "."));
     if (isNaN(monto) || monto <= 0) { setError("Ingresá un monto válido."); return; }
     setError(null);
@@ -253,6 +295,14 @@ function ItemActivoCard({
       {/* Rango válido */}
       <Text style={s.rangoText}>{rangoTexto}</Text>
 
+      {/* Aviso de bloqueo (sin medio de pago verificado o categoría insuficiente) */}
+      {motivoBloqueo ? (
+        <View style={s.bloqueoRow}>
+          <MaterialIcons name="lock" size={14} color={GOLD} />
+          <Text style={s.bloqueoText}>{motivoBloqueo}</Text>
+        </View>
+      ) : null}
+
       {/* Input + botón */}
       <View style={s.pujaRow}>
         <TextInput
@@ -262,9 +312,10 @@ function ItemActivoCard({
           keyboardType="numeric"
           value={importe}
           onChangeText={setImporte}
+          editable={!motivoBloqueo}
         />
         <TouchableOpacity
-          style={[s.pujaBtn, loading && { opacity: 0.5 }]}
+          style={[s.pujaBtn, (loading || !!motivoBloqueo) && { opacity: 0.5 }]}
           onPress={handlePujar}
           disabled={loading}
         >
@@ -289,27 +340,6 @@ function ItemActivoCard({
   );
 }
 
-// ─── Screen principal ─────────────────────────────────────────────────────────
-
-export default function SubastaElegidaScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
-  const router = useRouter();
-  const insets = useSafeAreaInsets();
-
-  const [subasta, setSubasta]       = useState<SubastaResponse | null>(null);
-  const [asistente, setAsistente]   = useState<AsistenteResponse | null>(null);
-  const [asistentesMap, setAsistentesMap] = useState<Record<number, number>>({});
-  const [items, setItems]           = useState<ItemCatalogoDetalleResponse[]>([]);
-  const [pujasActivas, setPujasActivas] = useState<PujaResponse[]>([]);
-  const [loading, setLoading]       = useState(true);
-  const [joining, setJoining]       = useState(false);
-  const [joinError, setJoinError]   = useState<string | null>(null);
-  const [countdown, setCountdown]   = useState(TIMER_INICIAL);
-
-  const wsCancelRef = useRef<(() => void) | null>(null);
-  const pollingRef  = useRef<ReturnType<typeof setInterval> | null>(null);
-  const timerRef    = useRef<ReturnType<typeof setInterval> | null>(null);
-  const itemActivoIdRef = useRef<number | null | undefined>(null);
 
   // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -378,6 +408,7 @@ export default function SubastaElegidaScreen() {
           usuarioService.getUsuarioLocal(),
         ]);
         setSubasta(sub);
+        setUsuario(usuario);
         setCountdown(calcCountdown(sub));
         itemActivoIdRef.current = sub.itemActivoId;
 
@@ -464,6 +495,7 @@ export default function SubastaElegidaScreen() {
 
   // ── Puja local (optimista: agregar antes de recibir por WS) ───────────────
 
+
   const handlePujaLocal = (puja: PujaResponse) => {
     setPujasActivas((prev) => {
       if (prev.some((p) => p.identificador === puja.identificador)) return prev;
@@ -491,6 +523,7 @@ export default function SubastaElegidaScreen() {
 
   const estaAbierta = subasta.estado === "abierta";
   const imagen = CATEGORIA_IMAGE[subasta.categoria];
+  const motivo = motivoNoPuede(usuario, subasta);
 
   return (
     <KeyboardAvoidingView
@@ -557,6 +590,12 @@ export default function SubastaElegidaScreen() {
               <Text style={s.muted} numberOfLines={2}>
                 Uníte como postor para realizar pujas sobre los artículos del catálogo.
               </Text>
+              {motivo ? (
+                <View style={[s.bloqueoRow, { marginTop: 10, marginBottom: 0 }]}>
+                  <MaterialIcons name="lock" size={14} color={GOLD} />
+                  <Text style={s.bloqueoText}>{motivo}</Text>
+                </View>
+              ) : null}
               {joinError ? (
                 <View style={[s.errorRow, { marginTop: 10 }]}>
                   <MaterialIcons name="error-outline" size={14} color={RED} />
@@ -603,6 +642,7 @@ export default function SubastaElegidaScreen() {
                 categoria={subasta.categoria}
                 countdown={countdown}
                 onPujaLocal={handlePujaLocal}
+                motivoBloqueo={motivo}
               />
             )}
 
@@ -700,6 +740,13 @@ const s = StyleSheet.create({
   pujaBtnText:{ color: BG, fontFamily: "serif", fontSize: 13, fontWeight: "900" },
   errorRow:   { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 8 },
   errorText:  { color: "#e74c3c", fontFamily: "serif", fontSize: 12, flex: 1 },
+  bloqueoRow: {
+    flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 10,
+    padding: 10, borderRadius: 8,
+    backgroundColor: "rgba(212,175,55,0.10)",
+    borderWidth: 1, borderColor: "rgba(212,175,55,0.35)",
+  },
+  bloqueoText: { color: "#d4af37", fontFamily: "serif", fontSize: 12, flex: 1 },
 
   // Chat
   sectionLabel:   { color: "#3a5070", fontFamily: "serif", fontSize: 11, fontWeight: "900", letterSpacing: 2, marginTop: 20, marginBottom: 8 },
@@ -726,3 +773,5 @@ const s = StyleSheet.create({
   resultDesc:   { color: "#8aa3be", fontFamily: "serif", fontSize: 13, flex: 1, marginRight: 8 },
   resultImporte:{ fontFamily: "serif", fontSize: 14, fontWeight: "900" },
 });
+
+

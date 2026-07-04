@@ -47,7 +47,7 @@ export interface UsuarioResponse {
   direccion?: string;
   fotoBase64?: string;
   verificado: "si" | "no";
-  categoria?: "comun" | "especial" | "plata" | "oro" | "platino";
+  nivelCategoria: NivelCategoria;
   role?: "USER" | "ADMIN";
   mediosPago?: PaymentMethod[];
 }
@@ -81,7 +81,11 @@ export interface NotificacionResponse {
   categoriaDestino: string;
   fechaCreacion: string;
 }
-
+export interface NivelCategoria {
+  id: number;
+  nombre: string;
+  pujasGanadasNecesarias: number;
+}
 export interface NivelProgressResponse {
   nivelActual: string;
   pujasGanadas: number;
@@ -112,6 +116,7 @@ const usuarioService = {
   async login(data: LoginRequest): Promise<TokenResponse> {
     const res = await api.post<TokenResponse>("/usuarios/login", data);
     await AsyncStorage.setItem("token", res.data.token);
+    await AsyncStorage.setItem("usuario", JSON.stringify(res.data));
     return res.data;
   },
 
@@ -121,8 +126,9 @@ const usuarioService = {
   },
 
   async obtenerPerfil(): Promise<UsuarioResponse> {
-    const res = await api.get<UsuarioResponse>("/usuarios/me");
-    const { fotoDocumentoFrente, fotoDocumentoDorso, ...perfilReducido } =
+    const token = await AsyncStorage.getItem("token");
+    const res = await api.get<UsuarioResponse>("/usuarios/me",token ? { headers: { Authorization: `Bearer ${token}` } } : undefined);
+    const { fotoDocumentoFrente, fotoDocumentoDorso,categoria, ...perfilReducido } =
       res.data as any;
     await AsyncStorage.setItem("usuario", JSON.stringify(perfilReducido));
     return res.data;
@@ -204,6 +210,7 @@ const usuarioService = {
 
   async obtenerNivelProgress(id: number): Promise<NivelProgressResponse> {
     const res = await api.get<NivelProgressResponse>(`/usuarios/${id}/nivel`);
+    await AsyncStorage.setItem("nivelProgress", JSON.stringify(res.data));
     return res.data;
   },
 
