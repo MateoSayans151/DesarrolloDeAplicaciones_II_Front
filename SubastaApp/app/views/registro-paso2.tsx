@@ -53,12 +53,12 @@ export default function RegistroPaso2() {
       resetRegistro();
       try {
         await usuarioService.login({ documento: data.documento, password });
-        router.replace("/home");
+        router.replace("/views/home");
       } catch {
         Alert.alert(
           "Registro completado",
           "Tu cuenta fue creada. Inicia sesion para continuar.",
-          [{ text: "OK", onPress: () => router.replace("/") }]
+          [{ text: "OK", onPress: () => router.replace("/views") }]
         );
       }
     } catch (e: any) {
@@ -108,21 +108,21 @@ export default function RegistroPaso2() {
       <View style={styles.optionsContainer}>
         <TouchableOpacity
           style={[styles.option, medioPago?.tipo === "TARJETA" && styles.optionSelected]}
-          onPress={() => router.push("/tarjeta")}
+          onPress={() => router.push("/views/tarjeta")}
         >
           <Text style={styles.optionText}>ANADIR TARJETA</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={[styles.option, medioPago?.tipo === "CUENTA" && styles.optionSelected]}
-          onPress={() => router.push("/cuenta-bancaria")}
+          onPress={() => router.push("/views/cuenta-bancaria")}
         >
           <Text style={styles.optionText}>ANADIR CUENTA BANCARIA</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={[styles.option, medioPago?.tipo === "CHEQUE" && styles.optionSelected]}
-          onPress={() => router.push("/cheque")}
+          onPress={() => router.push("/views/cheque")}
         >
           <Text style={styles.optionText}>REGISTRAR CHEQUE</Text>
         </TouchableOpacity>
