@@ -218,7 +218,6 @@ const usuarioService = {
     const res = await api.get<UsuarioResponse[]>("/usuarios/admin/pendientes");
     return res.data;
   },
-
   async verificarUsuario(
     id: number,
     aprobar: boolean,

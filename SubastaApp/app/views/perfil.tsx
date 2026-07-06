@@ -3,6 +3,7 @@ import usuarioService, {
   EstadisticasUsuarioResponse,
   PaymentMethod,
   UsuarioResponse,
+  NivelCategoria,
 } from "@/models/services/usuarioService";
 import subastaService from "@/models/services/subastaService";
 import { C } from "@/styles/colors";
@@ -301,6 +302,7 @@ export default function PerfilScreen() {
       await usuarioService.agregarMedioPago(req);
       setShowAddPayment(false);
       await cargarDatos();
+
     } catch (e: any) {
       Alert.alert("Error", e.message ?? "No se pudo agregar el medio de pago.");
     } finally {
@@ -409,7 +411,7 @@ export default function PerfilScreen() {
           </TouchableOpacity>
         </View>
         <View style={styles.divider} />
-        <InfoRow icon="badge" label="Categoría" value={usuario?.categoria} />
+        <InfoRow icon="badge" label="Categoría" value={usuario?.nivelCategoria?.nombre} />
         <InfoRow icon="fingerprint" label="Documento" value={usuario?.documento} />
       </View>
 
