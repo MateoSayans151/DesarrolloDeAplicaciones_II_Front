@@ -55,28 +55,6 @@ function motivoNoPuede(usuario: UsuarioResponse | null, subasta: SubastaResponse
   if (subRank > userRank) return `Tu categoría no alcanza: esta subasta es de categoría "${subasta.categoria}".`;
   return null;
 }
-// ─── Screen principal ─────────────────────────────────────────────────────────
-
-export default function SubastaElegidaScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
-  const router = useRouter();
-  const insets = useSafeAreaInsets();
-
-  const [subasta, setSubasta]       = useState<SubastaResponse | null>(null);
-  const [usuario, setUsuario]       = useState<UsuarioResponse | null>(null);
-  const [asistente, setAsistente]   = useState<AsistenteResponse | null>(null);
-  const [asistentesMap, setAsistentesMap] = useState<Record<number, number>>({});
-  const [items, setItems]           = useState<ItemCatalogoDetalleResponse[]>([]);
-  const [pujasActivas, setPujasActivas] = useState<PujaResponse[]>([]);
-  const [loading, setLoading]       = useState(true);
-  const [joining, setJoining]       = useState(false);
-  const [joinError, setJoinError]   = useState<string | null>(null);
-  const [countdown, setCountdown]   = useState(TIMER_INICIAL);
-
-  const wsCancelRef = useRef<(() => void) | null>(null);
-  const pollingRef  = useRef<ReturnType<typeof setInterval> | null>(null);
-  const timerRef    = useRef<ReturnType<typeof setInterval> | null>(null);
-  const itemActivoIdRef = useRef<number | null | undefined>(null);
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -340,6 +318,28 @@ function ItemActivoCard({
   );
 }
 
+// ─── Screen principal ─────────────────────────────────────────────────────────
+
+export default function SubastaElegidaScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
+
+  const [subasta, setSubasta]       = useState<SubastaResponse | null>(null);
+  const [usuario, setUsuario]       = useState<UsuarioResponse | null>(null);
+  const [asistente, setAsistente]   = useState<AsistenteResponse | null>(null);
+  const [asistentesMap, setAsistentesMap] = useState<Record<number, number>>({});
+  const [items, setItems]           = useState<ItemCatalogoDetalleResponse[]>([]);
+  const [pujasActivas, setPujasActivas] = useState<PujaResponse[]>([]);
+  const [loading, setLoading]       = useState(true);
+  const [joining, setJoining]       = useState(false);
+  const [joinError, setJoinError]   = useState<string | null>(null);
+  const [countdown, setCountdown]   = useState(TIMER_INICIAL);
+
+  const wsCancelRef = useRef<(() => void) | null>(null);
+  const pollingRef  = useRef<ReturnType<typeof setInterval> | null>(null);
+  const timerRef    = useRef<ReturnType<typeof setInterval> | null>(null);
+  const itemActivoIdRef = useRef<number | null | undefined>(null);
 
   // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -494,7 +494,6 @@ function ItemActivoCard({
   };
 
   // ── Puja local (optimista: agregar antes de recibir por WS) ───────────────
-
 
   const handlePujaLocal = (puja: PujaResponse) => {
     setPujasActivas((prev) => {
@@ -773,5 +772,3 @@ const s = StyleSheet.create({
   resultDesc:   { color: "#8aa3be", fontFamily: "serif", fontSize: 13, flex: 1, marginRight: 8 },
   resultImporte:{ fontFamily: "serif", fontSize: 14, fontWeight: "900" },
 });
-
-
